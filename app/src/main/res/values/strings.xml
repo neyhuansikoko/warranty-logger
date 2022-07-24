@@ -9,4 +9,10 @@
 
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="enter_warranty_name_text">Enter Warranty Name</string>
+    <string name="enter_expiration_date_text">Enter Expiration Date</string>
+    <string name="add_picture_text">Add Picture</string>
+    <string name="save_text">Save</string>
 </resources>

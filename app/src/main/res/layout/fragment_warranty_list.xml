@@ -7,37 +7,37 @@
     tools:context=".WarrantyListFragment">
 
     <TextView
-        android:id="@+id/tv_warranty_name_label"
+        android:id="@+id/tv_detail_warranty_name_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginTop="16dp"
         android:fontFamily="sans-serif-black"
-        android:text="@string/warranty_name_label_text"
+        android:text="@string/warranty_name_shortened_label_text"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/tv_expiration_date_label"
+        android:id="@+id/tv_list_expiration_date_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="32dp"
         android:fontFamily="sans-serif-black"
-        android:text="@string/expiration_date_label_text"
+        android:text="@string/expiration_date_shortened_label_text"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/tv_warranty_name_label" />
+        app:layout_constraintTop_toTopOf="@+id/tv_detail_warranty_name_label" />
 
     <com.google.android.material.divider.MaterialDivider
-        android:id="@+id/div_label"
+        android:id="@+id/div_list_label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_warranty_name_label" />
+        app:layout_constraintTop_toBottomOf="@id/tv_detail_warranty_name_label" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_warranty"
+        android:id="@+id/rv_list_warranty"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:scrollbars="vertical"
@@ -46,13 +46,13 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/div_label"
+        app:layout_constraintTop_toBottomOf="@id/div_list_label"
         app:layout_constraintVertical_bias="1.0"
         tools:itemCount="32"
         tools:listitem="@layout/list_item_warranty" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/floatingActionButton"
+        android:id="@+id/fab_list"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"

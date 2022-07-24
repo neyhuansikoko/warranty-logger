@@ -9,54 +9,55 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="@dimen/parent_padding">
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/til_warranty_name"
+            android:id="@+id/til_add_warranty_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/enter_warranty_name_text"
-            app:startIconDrawable="@drawable/ic_edit">
+            app:startIconDrawable="@drawable/ic_name">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/til_et_warranty_name"
+                android:id="@+id/til_et_add_warranty_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/til_expiration_date"
+            android:id="@+id/til_add_expiration_date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:hint="@string/enter_expiration_date_text"
-            app:placeholderText="yyyy/mm/dd"
             app:startIconDrawable="@drawable/ic_date_picker">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/til_et_expiration_date"
+                android:id="@+id/til_et_add_expiration_date"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:focusable="false"/>
+                android:focusable="false"
+                android:clickable="false"
+                android:cursorVisible="false"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <Button
-            android:id="@+id/btn_add_picture"
+            android:id="@+id/btn_add_add_picture"
             style="?attr/materialButtonOutlinedStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="@string/add_picture_text"
-            app:icon="@drawable/ic_add_picture" />
+            android:text="@string/add_image_text"
+            app:icon="@drawable/ic_image" />
 
         <com.google.android.material.divider.MaterialDivider
-            android:id="@+id/materialDivider"
+            android:id="@+id/div_add"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp" />
 
         <Button
-            android:id="@+id/btn_save"
+            android:id="@+id/btn_add_save"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"

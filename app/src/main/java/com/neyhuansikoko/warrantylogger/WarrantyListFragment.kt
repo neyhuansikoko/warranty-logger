@@ -32,7 +32,7 @@ class WarrantyListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.floatingActionButton.setOnClickListener {
+        binding.fabList.setOnClickListener {
             findNavController().navigate(R.id.action_warrantyListFragment_to_addWarrantyFragment)
         }
     }

@@ -1,17 +1,15 @@
 <resources>
     <string name="app_name">Warranty Logger</string>
-    <string name="action_settings">Settings</string>
-    <!-- Strings used for fragments for navigation -->
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
-
-    <string name="hello_first_fragment">Hello first fragment</string>
-    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="enter_warranty_name_text">Enter Warranty Name</string>
     <string name="enter_expiration_date_text">Enter Expiration Date</string>
-    <string name="add_picture_text">Add Picture</string>
+    <string name="add_image_text">Add Image</string>
     <string name="save_text">Save</string>
     <string name="warranty_list_fab_description_text">Add new warranty</string>
-    <string name="expiration_date_label_text">EXP DATE</string>
-    <string name="warranty_name_label_text">NAME</string>
+    <string name="expiration_date_shortened_label_text">EXP DATE</string>
+    <string name="warranty_name_shortened_label_text">NAME</string>
+    <string name="menu_item_edit_text">Edit</string>
+    <string name="menu_item_delete_text">Delete</string>
+    <string name="warranty_name_label_text">Warranty Name</string>
+    <string name="expiration_date_label_text">Expiration Date</string>
+    <string name="image_label_text">Image</string>
 </resources>

@@ -1,27 +1,124 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".WarrantyDetailFragment">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/textview_second"
-        android:layout_width="wrap_content"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@id/button_second"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:padding="@dimen/parent_padding"
+        tools:context=".WarrantyDetailFragment">
 
-    <Button
-        android:id="@+id/button_second"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/previous"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textview_second" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <ImageView
+            android:id="@+id/img_detail_ic_warranty_name"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_name"
+            app:layout_constraintBottom_toBottomOf="@+id/tv_detail_warranty_name_label"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/tv_detail_warranty_name_label" />
+
+        <TextView
+            android:id="@+id/tv_detail_warranty_name_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:fontFamily="sans-serif-black"
+            android:text="@string/warranty_name_label_text"
+            app:layout_constraintStart_toEndOf="@+id/img_detail_ic_warranty_name"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_detail_warranty_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:layout_constraintStart_toStartOf="@+id/tv_detail_warranty_name_label"
+            app:layout_constraintTop_toBottomOf="@+id/tv_detail_warranty_name_label"
+            tools:text="Refrigerator Warranty" />
+
+        <com.google.android.material.divider.MaterialDivider
+            android:id="@+id/div_warranty_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_detail_warranty_name" />
+
+        <ImageView
+            android:id="@+id/img_ic_expiration_date"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_date_picker"
+            app:layout_constraintBottom_toBottomOf="@+id/tv_detail_expiration_date_label"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/tv_detail_expiration_date_label" />
+
+        <TextView
+            android:id="@+id/tv_detail_expiration_date_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:fontFamily="sans-serif-black"
+            android:text="@string/expiration_date_label_text"
+            app:layout_constraintStart_toEndOf="@+id/img_ic_expiration_date"
+            app:layout_constraintTop_toBottomOf="@+id/div_warranty_name" />
+
+        <TextView
+            android:id="@+id/tv_detail_expiration_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:layout_constraintStart_toStartOf="@+id/tv_detail_expiration_date_label"
+            app:layout_constraintTop_toBottomOf="@+id/tv_detail_expiration_date_label"
+            tools:text="17/08/2030" />
+
+        <com.google.android.material.divider.MaterialDivider
+            android:id="@+id/div_expiration_date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_detail_expiration_date" />
+
+        <ImageView
+            android:id="@+id/img_detail_ic_image"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_image"
+            app:layout_constraintBottom_toBottomOf="@+id/tv_detail_image_label"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/tv_detail_image_label" />
+
+        <TextView
+            android:id="@+id/tv_detail_image_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:fontFamily="sans-serif-black"
+            android:text="@string/image_label_text"
+            app:layout_constraintStart_toEndOf="@+id/img_detail_ic_image"
+            app:layout_constraintTop_toBottomOf="@+id/div_expiration_date" />
+
+        <ImageView
+            android:id="@+id/img_detail_image"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:importantForAccessibility="no"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/tv_detail_image_label"
+            app:layout_constraintTop_toBottomOf="@+id/tv_detail_image_label"
+            tools:src="@tools:sample/backgrounds/scenic" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

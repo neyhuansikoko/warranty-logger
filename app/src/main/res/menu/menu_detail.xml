@@ -1,0 +1,20 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.neyhuansikoko.warrantylogger.MainActivity">
+
+    <item
+        android:id="@+id/menu_item_edit"
+        android:icon="@drawable/ic_edit"
+        android:orderInCategory="100"
+        android:title="@string/menu_item_edit_text"
+        app:showAsAction="ifRoom"
+        app:iconTint="?attr/colorOnPrimary"/>
+    <item
+        android:id="@+id/menu_item_delete"
+        android:icon="@drawable/ic_delete"
+        android:title="@string/menu_item_delete_text"
+        app:showAsAction="ifRoom"
+        app:iconTint="?attr/colorOnPrimary"/>
+
+</menu>

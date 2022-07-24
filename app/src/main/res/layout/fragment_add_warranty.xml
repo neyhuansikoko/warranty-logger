@@ -37,7 +37,7 @@
                 android:id="@+id/til_et_expiration_date"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                tools:ignore="TextContrastCheck" />
+                android:focusable="false"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <Button

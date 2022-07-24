@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.neyhuansikoko.warrantylogger.databinding.FragmentAddWarrantyBinding
-import com.neyhuansikoko.warrantylogger.databinding.FragmentFirstBinding
 import java.text.SimpleDateFormat
 
 class AddWarrantyFragment : Fragment() {

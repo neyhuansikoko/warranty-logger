@@ -6,14 +6,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
-import com.neyhuansikoko.warrantylogger.databinding.FragmentFirstBinding
+import com.neyhuansikoko.warrantylogger.databinding.FragmentWarrantyListBinding
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
  */
-class FirstFragment : Fragment() {
+class WarrantyListFragment : Fragment() {
 
-    private var _binding: FragmentFirstBinding? = null
+    private var _binding: FragmentWarrantyListBinding? = null
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -24,7 +24,7 @@ class FirstFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
 
-        _binding = FragmentFirstBinding.inflate(inflater, container, false)
+        _binding = FragmentWarrantyListBinding.inflate(inflater, container, false)
         return binding.root
 
     }
@@ -33,11 +33,11 @@ class FirstFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.buttonFirst.setOnClickListener {
-            findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
+            findNavController().navigate(R.id.action_warrantyListFragment_to_warrantyDetailFragment)
         }
 
         binding.floatingActionButton.setOnClickListener {
-            findNavController().navigate(R.id.action_FirstFragment_to_addWarrantyFragment)
+            findNavController().navigate(R.id.action_warrantyListFragment_to_addWarrantyFragment)
         }
     }
 

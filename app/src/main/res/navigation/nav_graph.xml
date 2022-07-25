@@ -27,6 +27,9 @@
         <action
             android:id="@+id/action_SecondFragment_to_FirstFragment"
             app:destination="@id/warrantyListFragment" />
+        <argument
+            android:name="id"
+            app:argType="integer" />
     </fragment>
     <fragment
         android:id="@+id/addWarrantyFragment"
@@ -35,6 +38,8 @@
         tools:layout="@layout/fragment_add_warranty" >
         <action
             android:id="@+id/action_addWarrantyFragment_to_warrantyListFragment"
-            app:destination="@id/warrantyListFragment" />
+            app:destination="@id/warrantyListFragment"
+            app:popUpTo="@id/warrantyListFragment"
+            app:popUpToInclusive="true" />
     </fragment>
 </navigation>

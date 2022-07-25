@@ -22,7 +22,7 @@ abstract class WarrantyRoomDatabase : RoomDatabase() {
                     WarrantyRoomDatabase::class.java,
                     "item_database"
                 )
-                    .fallbackToDestructiveMigration()
+                    .fallbackToDestructiveMigration() //TODO: Remove this on production
                     .build()
                 INSTANCE = instance
 

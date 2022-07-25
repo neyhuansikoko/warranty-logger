@@ -12,4 +12,6 @@
     <string name="warranty_name_label_text">Warranty Name</string>
     <string name="expiration_date_label_text">Expiration Date</string>
     <string name="image_label_text">Image</string>
+    <string name="warranty_name_error_text">Warranty name cannot be empty.</string>
+    <string name="expiration_date_error_text">Warranty must have expiration date.</string>
 </resources>

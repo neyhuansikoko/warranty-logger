@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.RecyclerView
 import com.neyhuansikoko.warrantylogger.R
 import com.neyhuansikoko.warrantylogger.WarrantyListAdapter
 import com.neyhuansikoko.warrantylogger.WarrantyLoggerApplication
@@ -53,9 +54,22 @@ class WarrantyListFragment : Fragment() {
             }
             rvListWarranty.adapter = adapter
 
+            //Fade the FAB when the user are scrolling down and show it when scrolling up
+            rvListWarranty.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    super.onScrolled(recyclerView, dx, dy)
+                    if (dy > 0) {
+                        fabList.hide()
+                    } else fabList.show()
+                }
+            })
+
             sharedViewModel.allWarranties.observe(viewLifecycleOwner) {
                 adapter.submitList(it)
             }
+
+            //TODO: Remove
+//            sharedViewModel.testInsertTwentyWarranty()
         }
     }
 

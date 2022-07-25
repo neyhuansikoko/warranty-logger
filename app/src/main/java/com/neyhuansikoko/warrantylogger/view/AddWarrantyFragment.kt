@@ -11,6 +11,7 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import com.neyhuansikoko.warrantylogger.R
 import com.neyhuansikoko.warrantylogger.WarrantyLoggerApplication
 import com.neyhuansikoko.warrantylogger.databinding.FragmentAddWarrantyBinding
+import com.neyhuansikoko.warrantylogger.formatDateMillis
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModelFactory
 import java.text.SimpleDateFormat
@@ -54,7 +55,7 @@ class AddWarrantyFragment : Fragment() {
                 datePicker.apply {
                     addOnPositiveButtonClickListener { date ->
                         expirationDateInMillis = date
-                        binding.tilEtAddExpirationDate.setText(SimpleDateFormat("dd/MM/yyyy").format(expirationDateInMillis))
+                        binding.tilEtAddExpirationDate.setText(formatDateMillis(expirationDateInMillis))
                     }
                     show(this@AddWarrantyFragment.requireActivity().supportFragmentManager, "tag")
                 }

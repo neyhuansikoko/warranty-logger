@@ -14,4 +14,7 @@
     <string name="image_label_text">Image</string>
     <string name="warranty_name_error_text">Warranty name cannot be empty.</string>
     <string name="expiration_date_error_text">Warranty must have expiration date.</string>
+    <string name="delete_message_text">Are you sure you want to delete?</string>
+    <string name="cancel">Cancel</string>
+    <string name="yes">Yes</string>
 </resources>

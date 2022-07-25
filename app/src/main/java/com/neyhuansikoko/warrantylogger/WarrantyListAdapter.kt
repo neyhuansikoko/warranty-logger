@@ -18,7 +18,7 @@ class WarrantyListAdapter(
         fun bind(warranty: Warranty) {
             binding.apply {
                 tvItemWarrantyName.text = warranty.warrantyName
-                tvItemExpirationDate.text = SimpleDateFormat("dd/MM/yyyy").format(warranty.expirationDate)
+                tvItemExpirationDate.text = formatDateMillis(warranty.expirationDate)
             }
         }
     }

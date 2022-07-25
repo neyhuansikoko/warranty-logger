@@ -90,7 +90,7 @@ class WarrantyDetailFragment : Fragment() {
     }
 
     private fun editWarranty() {
-        val action = WarrantyDetailFragmentDirections.actionWarrantyDetailFragmentToAddWarrantyFragment(id = warranty.id)
+        val action = WarrantyDetailFragmentDirections.actionWarrantyDetailFragmentToAddWarrantyFragment(id = warranty.id, title = getString(R.string.edit_warranty_title_text))
         findNavController().navigate(action)
     }
 

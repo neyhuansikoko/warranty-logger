@@ -25,8 +25,13 @@ class WarrantyViewModel(private val warrantyDao: WarrantyDao): ViewModel() {
         )
     }
 
+
     private fun insertWarranty(newWarranty: Warranty) {
         viewModelScope.launch(Dispatchers.IO) { warrantyDao.insert(newWarranty) }
+    }
+
+    fun updateWarranty(warranty: Warranty) {
+        viewModelScope.launch(Dispatchers.IO) { warrantyDao.update(warranty) }
     }
 
     fun deleteWarranty(warranty: Warranty) {

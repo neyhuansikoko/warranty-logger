@@ -5,16 +5,18 @@ import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.DateValidatorPointForward
 import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.neyhuansikoko.warrantylogger.R
 import com.neyhuansikoko.warrantylogger.WarrantyLoggerApplication
+import com.neyhuansikoko.warrantylogger.database.Warranty
 import com.neyhuansikoko.warrantylogger.databinding.FragmentAddWarrantyBinding
 import com.neyhuansikoko.warrantylogger.formatDateMillis
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModelFactory
-import java.text.SimpleDateFormat
 
 class AddWarrantyFragment : Fragment() {
 
@@ -23,6 +25,10 @@ class AddWarrantyFragment : Fragment() {
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
+
+    private val navigationArgs: AddWarrantyFragmentArgs by navArgs()
+
+    private lateinit var warranty: Warranty
 
     private var expirationDateInMillis: Long = 0
 
@@ -41,7 +47,38 @@ class AddWarrantyFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val warrantyId = navigationArgs.id
+
+        if (warrantyId > 0) {
+            sharedViewModel.getWarrantyById(warrantyId).observe(viewLifecycleOwner) {
+                it?.let {
+                    warranty = it
+                    bind(warranty)
+
+                    binding.btnAddSave.setOnClickListener {
+                        if (!isTextFieldEmpty()) {
+                            updateWarranty()
+                        }
+                    }
+
+                    binding.btnAddDelete.setOnClickListener {
+                        showConfirmationDialog()
+                    }
+                    binding.btnAddDelete.visibility = View.VISIBLE
+                }
+            }
+        } else {
+            binding.btnAddSave.setOnClickListener {
+                if (!isTextFieldEmpty()) {
+                    addWarranty()
+                }
+            }
+        }
+
         binding.apply {
+            btnAddCancel.setOnClickListener { findNavController().navigateUp() }
+
             tilEtAddExpirationDate.setOnClickListener {
                 val dateConstraints = CalendarConstraints.Builder()
                     .setValidator(DateValidatorPointForward.now())
@@ -60,23 +97,50 @@ class AddWarrantyFragment : Fragment() {
                     show(this@AddWarrantyFragment.requireActivity().supportFragmentManager, "tag")
                 }
             }
-            btnAddSave.setOnClickListener {
-                if (!isTextFieldEmpty()) {
-                    addWarranty()
-                }
-            }
+        }
+    }
+
+    private fun bind(warranty: Warranty) {
+        binding.apply {
+            tilEtAddWarrantyName.setText(warranty.warrantyName)
+            tilEtAddExpirationDate.setText(formatDateMillis(warranty.expirationDate))
         }
     }
 
     private fun addWarranty() {
-        binding.apply {
-            sharedViewModel.addNewWarranty(
-                warrantyName = tilEtAddWarrantyName.text.toString(),
-                expirationDate = expirationDateInMillis,
-                imageUri = null //TODO: Implement capturing image
-            )
-        }
+        sharedViewModel.addNewWarranty(
+            warrantyName = binding.tilEtAddWarrantyName.text.toString(),
+            expirationDate = expirationDateInMillis,
+            imageUri = null //TODO: Implement capturing image
+        )
         findNavController().navigate(R.id.action_addWarrantyFragment_to_warrantyListFragment)
+    }
+
+    private fun updateWarranty() {
+        val updatedWarranty = warranty.copy(
+            warrantyName = binding.tilEtAddWarrantyName.text.toString(),
+            expirationDate = expirationDateInMillis,
+            imageUri = null //TODO: Implement capturing image
+        )
+        sharedViewModel.updateWarranty(updatedWarranty)
+        findNavController().navigate(R.id.action_addWarrantyFragment_to_warrantyListFragment)
+    }
+
+    private fun deleteWarranty() {
+        sharedViewModel.deleteWarranty(warranty)
+        findNavController().navigate(R.id.action_addWarrantyFragment_to_warrantyListFragment)
+    }
+
+    private fun showConfirmationDialog() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(getString(android.R.string.dialog_alert_title))
+            .setMessage(getString(R.string.delete_message_text))
+            .setCancelable(false)
+            .setNegativeButton(getString(R.string.cancel)) { _, _ -> }
+            .setPositiveButton(getString(R.string.yes)) { _, _ ->
+                deleteWarranty()
+            }
+            .show()
     }
 
     private fun isTextFieldEmpty(): Boolean {

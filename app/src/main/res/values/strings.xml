@@ -17,4 +17,8 @@
     <string name="delete_message_text">Are you sure you want to delete?</string>
     <string name="cancel">Cancel</string>
     <string name="yes">Yes</string>
+    <string name="add_warranty_title_text">Add Warranty</string>
+    <string name="edit_warranty_title_text">Edit Warranty</string>
+    <string name="delete_text">Delete</string>
+    <string name="cancel_text">Cancel</string>
 </resources>

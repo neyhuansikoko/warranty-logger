@@ -45,7 +45,8 @@ class WarrantyListFragment : Fragment() {
 
         binding.apply {
             fabList.setOnClickListener {
-                findNavController().navigate(R.id.action_warrantyListFragment_to_addWarrantyFragment)
+                val action = WarrantyListFragmentDirections.actionWarrantyListFragmentToAddWarrantyFragment(title = getString(R.string.add_warranty_title_text))
+                findNavController().navigate(action)
             }
 
             val adapter = WarrantyListAdapter {

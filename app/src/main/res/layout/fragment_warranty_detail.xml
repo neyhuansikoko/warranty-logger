@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="@dimen/parent_padding"
-        tools:context=".WarrantyDetailFragment">
+        tools:context=".view.WarrantyDetailFragment">
 
         <ImageView
             android:id="@+id/img_detail_ic_warranty_name"

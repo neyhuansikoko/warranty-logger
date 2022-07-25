@@ -1,4 +1,4 @@
-package com.neyhuansikoko.warrantylogger
+package com.neyhuansikoko.warrantylogger.view
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
+import com.neyhuansikoko.warrantylogger.R
 import com.neyhuansikoko.warrantylogger.databinding.FragmentWarrantyListBinding
 
 /**

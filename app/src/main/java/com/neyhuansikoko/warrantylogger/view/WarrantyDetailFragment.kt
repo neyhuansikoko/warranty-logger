@@ -1,12 +1,11 @@
-package com.neyhuansikoko.warrantylogger
+package com.neyhuansikoko.warrantylogger.view
 
 import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
-import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
-import androidx.navigation.fragment.findNavController
+import com.neyhuansikoko.warrantylogger.R
 import com.neyhuansikoko.warrantylogger.databinding.FragmentWarrantyDetailBinding
 
 /**

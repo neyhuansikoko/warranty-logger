@@ -1,12 +1,8 @@
-package com.neyhuansikoko.warrantylogger
+package com.neyhuansikoko.warrantylogger.view
 
-import android.app.ProgressDialog.show
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
-import androidx.core.view.MenuProvider
-import androidx.lifecycle.Lifecycle
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.neyhuansikoko.warrantylogger.databinding.FragmentAddWarrantyBinding
 import java.text.SimpleDateFormat
@@ -31,7 +27,7 @@ class AddWarrantyFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            tilEtAddWarrantyName.setOnClickListener {
+            tilEtAddExpirationDate.setOnClickListener {
                 val datePicker =
                     MaterialDatePicker.Builder.datePicker()
                         .setTitleText("Select date")
@@ -39,7 +35,7 @@ class AddWarrantyFragment : Fragment() {
                         .build()
                 datePicker.apply {
                     addOnPositiveButtonClickListener { date ->
-                        binding.tilEtAddWarrantyName.setText(SimpleDateFormat("dd/MM/yyyy").format(date))
+                        binding.tilEtAddExpirationDate.setText(SimpleDateFormat("dd/MM/yyyy").format(date))
                     }
                     show(this@AddWarrantyFragment.requireActivity().supportFragmentManager, "tag")
                 }

@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/FirstFragment"
-        android:name="com.neyhuansikoko.warrantylogger.WarrantyListFragment"
+        android:name="com.neyhuansikoko.warrantylogger.view.WarrantyListFragment"
         android:label="@string/app_name"
         tools:layout="@layout/fragment_warranty_list">
 
@@ -20,7 +20,7 @@
     </fragment>
     <fragment
         android:id="@+id/SecondFragment"
-        android:name="com.neyhuansikoko.warrantylogger.WarrantyDetailFragment"
+        android:name="com.neyhuansikoko.warrantylogger.view.WarrantyDetailFragment"
         android:label="Warranty Detail"
         tools:layout="@layout/fragment_warranty_detail">
 
@@ -30,7 +30,7 @@
     </fragment>
     <fragment
         android:id="@+id/addWarrantyFragment"
-        android:name="com.neyhuansikoko.warrantylogger.AddWarrantyFragment"
+        android:name="com.neyhuansikoko.warrantylogger.view.AddWarrantyFragment"
         android:label="Add Warranty"
         tools:layout="@layout/fragment_add_warranty" />
 </navigation>

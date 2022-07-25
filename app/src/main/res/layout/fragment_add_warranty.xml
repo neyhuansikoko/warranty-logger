@@ -21,7 +21,8 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/til_et_add_warranty_name"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:singleLine="true" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -49,6 +50,13 @@
             android:layout_marginTop="16dp"
             android:text="@string/add_image_text"
             app:icon="@drawable/ic_image" />
+
+        <TextView
+            android:id="@+id/tv_add_image_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:singleLine="true"
+            tools:text="image.jpg" />
 
         <com.google.android.material.divider.MaterialDivider
             android:id="@+id/div_add"

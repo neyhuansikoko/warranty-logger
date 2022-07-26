@@ -2,6 +2,7 @@ package com.neyhuansikoko.warrantylogger.view
 
 import android.os.Bundle
 import android.view.*
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.activityViewModels
@@ -9,13 +10,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.neyhuansikoko.warrantylogger.R
-import com.neyhuansikoko.warrantylogger.WarrantyLoggerApplication
+import com.neyhuansikoko.warrantylogger.*
 import com.neyhuansikoko.warrantylogger.database.Warranty
 import com.neyhuansikoko.warrantylogger.databinding.FragmentWarrantyDetailBinding
-import com.neyhuansikoko.warrantylogger.formatDateMillis
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModelFactory
+import kotlinx.coroutines.*
 
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
@@ -85,7 +85,13 @@ class WarrantyDetailFragment : Fragment() {
         binding.apply {
             tvDetailWarrantyName.text = warranty.warrantyName
             tvDetailExpirationDate.text = formatDateMillis(warranty.expirationDate)
-            //TODO: Implement image capture
+            if (warranty.imageUri != null) {
+                imgDetailImage.setImageURI(warranty.imageUri.toUri())
+                tvDetailImageName.text = getFileNameFromUri(warranty.imageUri.toUri(), requireActivity()) ?: getString(
+                    R.string.no_image_set_text)
+            } else {
+                tvDetailImageName.text = getString(R.string.no_image_set_text)
+            }
         }
     }
 
@@ -96,6 +102,7 @@ class WarrantyDetailFragment : Fragment() {
 
     private fun deleteWarranty() {
         sharedViewModel.deleteWarranty(warranty)
+        deleteFileByUri(warranty.imageUri!!.toUri(), requireActivity())
         findNavController().navigate(R.id.action_warrantyDetailFragment_to_warrantyListFragment)
     }
 

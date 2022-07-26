@@ -19,7 +19,8 @@
             android:src="@drawable/ic_name"
             app:layout_constraintBottom_toBottomOf="@+id/tv_detail_warranty_name_label"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/tv_detail_warranty_name_label" />
+            app:layout_constraintTop_toTopOf="@+id/tv_detail_warranty_name_label"
+            app:tint="?attr/colorOnBackground" />
 
         <TextView
             android:id="@+id/tv_detail_warranty_name_label"
@@ -57,7 +58,8 @@
             android:src="@drawable/ic_date_picker"
             app:layout_constraintBottom_toBottomOf="@+id/tv_detail_expiration_date_label"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/tv_detail_expiration_date_label" />
+            app:layout_constraintTop_toTopOf="@+id/tv_detail_expiration_date_label"
+            app:tint="?attr/colorOnBackground" />
 
         <TextView
             android:id="@+id/tv_detail_expiration_date_label"
@@ -96,7 +98,8 @@
             android:src="@drawable/ic_image"
             app:layout_constraintBottom_toBottomOf="@+id/tv_detail_image_label"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/tv_detail_image_label" />
+            app:layout_constraintTop_toTopOf="@+id/tv_detail_image_label"
+            app:tint="?attr/colorOnBackground" />
 
         <TextView
             android:id="@+id/tv_detail_image_label"
@@ -109,15 +112,24 @@
             app:layout_constraintStart_toEndOf="@+id/img_detail_ic_image"
             app:layout_constraintTop_toBottomOf="@+id/div_expiration_date" />
 
+        <TextView
+            android:id="@+id/tv_detail_image_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:layout_constraintStart_toStartOf="@+id/tv_detail_image_label"
+            app:layout_constraintTop_toBottomOf="@+id/tv_detail_image_label"
+            tools:text="image.jpeg" />
+
         <ImageView
             android:id="@+id/img_detail_image"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:adjustViewBounds="true"
             android:importantForAccessibility="no"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/tv_detail_image_label"
-            app:layout_constraintTop_toBottomOf="@+id/tv_detail_image_label"
+            app:layout_constraintStart_toStartOf="@+id/tv_detail_image_name"
+            app:layout_constraintTop_toBottomOf="@+id/tv_detail_image_name"
             tools:src="@tools:sample/backgrounds/scenic" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

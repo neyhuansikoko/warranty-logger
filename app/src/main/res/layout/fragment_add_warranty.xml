@@ -45,12 +45,12 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <Button
-            android:id="@+id/btn_add_add_picture"
+            android:id="@+id/btn_add_take_picture"
             style="?attr/materialButtonOutlinedStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="@string/add_image_text"
+            android:text="@string/take_picture_text"
             app:icon="@drawable/ic_image" />
 
         <TextView
@@ -59,6 +59,14 @@
             android:layout_height="wrap_content"
             android:singleLine="true"
             tools:text="image.jpg" />
+
+        <ImageView
+            android:id="@+id/img_add_image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/image_of_warranty_text"
+            tools:srcCompat="@tools:sample/backgrounds/scenic" />
 
         <com.google.android.material.divider.MaterialDivider
             android:id="@+id/div_add"

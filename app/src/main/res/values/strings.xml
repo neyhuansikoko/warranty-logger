@@ -2,7 +2,7 @@
     <string name="app_name">Warranty Logger</string>
     <string name="enter_warranty_name_text">Enter Warranty Name</string>
     <string name="enter_expiration_date_text">Enter Expiration Date</string>
-    <string name="add_image_text">Add Image</string>
+    <string name="take_picture_text">Take Picture</string>
     <string name="save_text">Save</string>
     <string name="warranty_list_fab_description_text">Add new warranty</string>
     <string name="expiration_date_shortened_label_text">EXP DATE</string>
@@ -21,4 +21,8 @@
     <string name="edit_warranty_title_text">Edit Warranty</string>
     <string name="delete_text">Delete</string>
     <string name="cancel_text">Cancel</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="no_image_set_text">No image set</string>
+    <string name="image_of_warranty_text">Image of warranty</string>
 </resources>

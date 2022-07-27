@@ -2,6 +2,7 @@ package com.neyhuansikoko.warrantylogger
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -44,6 +45,7 @@ class WarrantyListAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val warranty = getItem(position)
+
         holder.itemView.setOnClickListener { clickListener(warranty) }
         holder.bind(warranty)
     }

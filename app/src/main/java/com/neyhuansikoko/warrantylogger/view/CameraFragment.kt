@@ -36,7 +36,7 @@ class CameraFragment : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
-    private val navigationArgs: WarrantyDetailFragmentArgs by navArgs()
+    private val navigationArgs: CameraFragmentArgs by navArgs()
 
     private var imageCapture: ImageCapture? = null
     private lateinit var cameraExecutor: ExecutorService
@@ -160,8 +160,9 @@ class CameraFragment : Fragment() {
             } else {
                 getString(R.string.add_warranty_title_text)
             },
-//            imageUri = this.imageUri
-            image = this.image
+            image = this.image,
+            inputWarrantyName = navigationArgs.inputWarrantyName,
+            inputExpirationDate = navigationArgs.inputExpirationDate
         )
         findNavController().navigate(action)
     }

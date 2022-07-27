@@ -29,10 +29,14 @@ class AddWarrantyFragment : Fragment() {
     private val navigationArgs: AddWarrantyFragmentArgs by navArgs()
     private val warrantyId: Int  by lazy { navigationArgs.id }
     private val tempImage: File? by lazy { navigationArgs.image?.let { getImageFileFromCache(requireActivity(), it) } }
+    private val inputWarrantyName by lazy { navigationArgs.inputWarrantyName }
+    private val inputExpirationDate by lazy { navigationArgs.inputExpirationDate }
 
     private lateinit var warranty: Warranty
 
+    private var defaultSelection: Long = 0
     private var expirationDateInMillis: Long = 0
+    private var warrantyName: String = ""
 
     private val sharedViewModel: WarrantyViewModel by activityViewModels {
         WarrantyViewModelFactory((activity?.applicationContext as WarrantyLoggerApplication).database.warrantyDao())
@@ -59,20 +63,22 @@ class AddWarrantyFragment : Fragment() {
         binding.apply {
             btnAddCancel.setOnClickListener { findNavController().navigateUp() }
 
+            defaultSelection = MaterialDatePicker.todayInUtcMilliseconds() + DAY_MILLIS
+
             tilEtAddExpirationDate.setOnClickListener {
                 val dateConstraints = CalendarConstraints.Builder()
-                    .setValidator(DateValidatorPointForward.from(
-                        MaterialDatePicker.todayInUtcMilliseconds() + DAY_MILLIS))
+                    .setValidator(DateValidatorPointForward.from(MaterialDatePicker.todayInUtcMilliseconds() + DAY_MILLIS))
                     .build()
                 val datePicker =
                     MaterialDatePicker.Builder.datePicker()
                         .setCalendarConstraints(dateConstraints)
                         .setTitleText("Select date")
-                        .setSelection(MaterialDatePicker.todayInUtcMilliseconds() + DAY_MILLIS)
+                        .setSelection(defaultSelection)
                         .build()
                 datePicker.apply {
                     addOnPositiveButtonClickListener { date ->
                         expirationDateInMillis = date
+                        defaultSelection = expirationDateInMillis
                         binding.tilEtAddExpirationDate.setText(formatDateMillis(expirationDateInMillis))
                     }
                     isCancelable = false
@@ -84,6 +90,12 @@ class AddWarrantyFragment : Fragment() {
 
     private fun setupAddWarranty() {
         binding.apply {
+            tilEtAddWarrantyName.setText(inputWarrantyName.ifEmpty { null })
+            if (inputExpirationDate > 0) {
+                expirationDateInMillis = inputExpirationDate
+                tilEtAddExpirationDate.setText(formatDateMillis(expirationDateInMillis))
+            }
+
             tempImage?.let {
                 imgAddImage.setImageURI(it.toUri())
                 tvAddImageName.text = it.name
@@ -94,7 +106,12 @@ class AddWarrantyFragment : Fragment() {
                 }
             }
             btnAddTakePicture.setOnClickListener {
-                findNavController().navigate(R.id.action_addWarrantyFragment_to_cameraFragment)
+                warrantyName = binding.tilEtAddWarrantyName.text.toString()
+                val action = AddWarrantyFragmentDirections.actionAddWarrantyFragmentToCameraFragment(
+                    inputWarrantyName = warrantyName,
+                    inputExpirationDate = expirationDateInMillis
+                )
+                findNavController().navigate(action)
             }
         }
     }
@@ -118,7 +135,12 @@ class AddWarrantyFragment : Fragment() {
                     btnAddDelete.visibility = View.VISIBLE
 
                     btnAddTakePicture.setOnClickListener {
-                        val action = AddWarrantyFragmentDirections.actionAddWarrantyFragmentToCameraFragment(id = warrantyId)
+                        warrantyName = binding.tilEtAddWarrantyName.text.toString()
+                        val action = AddWarrantyFragmentDirections.actionAddWarrantyFragmentToCameraFragment(
+                            id = warrantyId,
+                            inputWarrantyName = warrantyName,
+                            inputExpirationDate = expirationDateInMillis
+                        )
                         findNavController().navigate(action)
                     }
                 }
@@ -128,8 +150,14 @@ class AddWarrantyFragment : Fragment() {
 
     private fun bind(warranty: Warranty) {
         binding.apply {
-            tilEtAddWarrantyName.setText(warranty.warrantyName)
-            expirationDateInMillis = warranty.expirationDate
+            tilEtAddWarrantyName.setText(inputWarrantyName.ifEmpty { warranty.warrantyName })
+            expirationDateInMillis = if (inputExpirationDate > 0) {
+                defaultSelection = inputExpirationDate
+                defaultSelection
+            } else {
+                defaultSelection = warranty.expirationDate
+                defaultSelection
+            }
             tilEtAddExpirationDate.setText(formatDateMillis(expirationDateInMillis))
 
             //Set image and image name, if it exist

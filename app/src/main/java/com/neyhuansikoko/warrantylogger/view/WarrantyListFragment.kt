@@ -66,6 +66,7 @@ class WarrantyListFragment : Fragment() {
 
             sharedViewModel.allWarranties.observe(viewLifecycleOwner) {
                 adapter.submitList(it)
+                progressList.visibility = View.GONE
             }
 
             //TODO: Remove

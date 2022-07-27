@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "warranty")
 data class Warranty(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    @ColumnInfo(name = "warranty_name") val warrantyName: String,
-    @ColumnInfo(name = "expiration_date") val expirationDate: Long,
-    @ColumnInfo(name = "image_uri") val imageUri: String?
+    @ColumnInfo(name = "warranty_name") var warrantyName: String,
+    @ColumnInfo(name = "expiration_date") var expirationDate: Long,
+    @ColumnInfo(name = "image") var image: String?
 )

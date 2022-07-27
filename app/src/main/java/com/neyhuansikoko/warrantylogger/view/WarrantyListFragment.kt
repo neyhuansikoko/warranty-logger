@@ -15,9 +15,6 @@ import com.neyhuansikoko.warrantylogger.databinding.FragmentWarrantyListBinding
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModelFactory
 
-/**
- * A simple [Fragment] subclass as the default destination in the navigation.
- */
 class WarrantyListFragment : Fragment() {
 
     private var _binding: FragmentWarrantyListBinding? = null

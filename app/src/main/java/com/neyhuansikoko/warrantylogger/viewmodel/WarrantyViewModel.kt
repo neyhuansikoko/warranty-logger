@@ -12,16 +12,16 @@ class WarrantyViewModel(private val warrantyDao: WarrantyDao): ViewModel() {
 
     fun getWarrantyById(id: Int): LiveData<Warranty> = warrantyDao.getById(id).asLiveData()
 
-    fun addNewWarranty(warrantyName: String, expirationDate: Long, imageUri: String?) {
-        val newWarranty = getNewWarrantyEntry(warrantyName, expirationDate, imageUri)
+    fun addNewWarranty(warrantyName: String, expirationDate: Long, image: String?) {
+        val newWarranty = getNewWarrantyEntry(warrantyName, expirationDate, image)
         insertWarranty(newWarranty)
     }
 
-    private fun getNewWarrantyEntry(warrantyName: String, expirationDate: Long, imageUri: String?): Warranty {
+    private fun getNewWarrantyEntry(warrantyName: String, expirationDate: Long, image: String?): Warranty {
         return Warranty(
             warrantyName = warrantyName,
             expirationDate = expirationDate,
-            imageUri = imageUri
+            image = image
         )
     }
 

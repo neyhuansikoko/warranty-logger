@@ -57,7 +57,7 @@
             android:id="@+id/action_addWarrantyFragment_to_cameraFragment"
             app:destination="@id/cameraFragment" />
         <argument
-            android:name="imageUri"
+            android:name="image"
             app:argType="string"
             app:nullable="true"
             android:defaultValue="@null" />

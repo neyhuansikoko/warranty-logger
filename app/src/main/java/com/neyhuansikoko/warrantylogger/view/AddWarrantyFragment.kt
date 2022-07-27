@@ -1,9 +1,7 @@
 package com.neyhuansikoko.warrantylogger.view
 
 import android.os.Bundle
-import android.provider.OpenableColumns
 import android.view.*
-import androidx.activity.OnBackPressedCallback
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -29,6 +27,8 @@ class AddWarrantyFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val navigationArgs: AddWarrantyFragmentArgs by navArgs()
+    private val warrantyId: Int  by lazy { navigationArgs.id }
+    private val tempImage: File? by lazy { navigationArgs.image?.let { getImageFileFromCache(requireActivity(), it) } }
 
     private lateinit var warranty: Warranty
 
@@ -37,8 +37,6 @@ class AddWarrantyFragment : Fragment() {
     private val sharedViewModel: WarrantyViewModel by activityViewModels {
         WarrantyViewModelFactory((activity?.applicationContext as WarrantyLoggerApplication).database.warrantyDao())
     }
-
-    private var isUsed: Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -52,58 +50,10 @@ class AddWarrantyFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val warrantyId = navigationArgs.id
-
         if (warrantyId > 0) {
-            sharedViewModel.getWarrantyById(warrantyId).observe(viewLifecycleOwner) {
-                it?.let {
-                    warranty = it
-                    bind(warranty)
-
-                    binding.apply {
-                        btnAddSave.setOnClickListener {
-                            if (!isTextFieldEmpty()) {
-                                isUsed = true
-                                updateWarranty()
-                            }
-                        }
-
-                        btnAddDelete.setOnClickListener {
-                            showConfirmationDialog()
-                        }
-                        btnAddDelete.visibility = View.VISIBLE
-
-                        btnAddTakePicture.setOnClickListener {
-                            navigationArgs.imageUri?.let { uriString ->
-                                //Delete old image
-                                deleteFileByUri(uriString.toUri(), requireActivity())
-                            }
-                            val action = AddWarrantyFragmentDirections.actionAddWarrantyFragmentToCameraFragment(id = warrantyId)
-                            findNavController().navigate(action)
-                        }
-                    }
-                }
-            }
+            setupEditWarranty()
         } else {
-            binding.apply {
-                navigationArgs.imageUri?.let { uriString ->
-                    imgAddImage.setImageURI(uriString.toUri())
-                    tvAddImageName.text = getFileNameFromUri(uriString.toUri(), requireActivity())
-                }
-                btnAddSave.setOnClickListener {
-                    if (!isTextFieldEmpty()) {
-                        isUsed = true
-                        addWarranty()
-                    }
-                }
-                btnAddTakePicture.setOnClickListener {
-                    navigationArgs.imageUri?.let { uriString ->
-                        //Delete old image
-                        deleteFileByUri(uriString.toUri(), requireActivity())
-                    }
-                    findNavController().navigate(R.id.action_addWarrantyFragment_to_cameraFragment)
-                }
-            }
+            setupAddWarranty()
         }
 
         binding.apply {
@@ -124,7 +74,52 @@ class AddWarrantyFragment : Fragment() {
                         expirationDateInMillis = date
                         binding.tilEtAddExpirationDate.setText(formatDateMillis(expirationDateInMillis))
                     }
+                    isCancelable = false
                     show(this@AddWarrantyFragment.requireActivity().supportFragmentManager, "tag")
+                }
+            }
+        }
+    }
+
+    private fun setupAddWarranty() {
+        binding.apply {
+            tempImage?.let {
+                imgAddImage.setImageURI(it.toUri())
+                tvAddImageName.text = it.name
+            }
+            btnAddSave.setOnClickListener {
+                if (!isTextFieldEmpty()) {
+                    addWarranty()
+                }
+            }
+            btnAddTakePicture.setOnClickListener {
+                findNavController().navigate(R.id.action_addWarrantyFragment_to_cameraFragment)
+            }
+        }
+    }
+
+    private fun setupEditWarranty() {
+        sharedViewModel.getWarrantyById(warrantyId).observe(viewLifecycleOwner) {
+            it?.let {
+                warranty = it
+                bind(warranty)
+
+                binding.apply {
+                    btnAddSave.setOnClickListener {
+                        if (!isTextFieldEmpty()) {
+                            updateWarranty()
+                        }
+                    }
+
+                    btnAddDelete.setOnClickListener {
+                        showConfirmationDialog()
+                    }
+                    btnAddDelete.visibility = View.VISIBLE
+
+                    btnAddTakePicture.setOnClickListener {
+                        val action = AddWarrantyFragmentDirections.actionAddWarrantyFragmentToCameraFragment(id = warrantyId)
+                        findNavController().navigate(action)
+                    }
                 }
             }
         }
@@ -135,43 +130,50 @@ class AddWarrantyFragment : Fragment() {
             tilEtAddWarrantyName.setText(warranty.warrantyName)
             expirationDateInMillis = warranty.expirationDate
             tilEtAddExpirationDate.setText(formatDateMillis(expirationDateInMillis))
-            if (navigationArgs.imageUri != null) {
-                val uri = navigationArgs.imageUri!!.toUri()
-                imgAddImage.setImageURI(uri)
-                tvAddImageName.text = getFileNameFromUri(uri, requireActivity())
-            } else {
-                warranty.imageUri?.let {
-                    imgAddImage.setImageURI(it.toUri())
-                    tvAddImageName.text = getFileNameFromUri(it.toUri(), requireActivity())
-                }
+
+            //Set image and image name, if it exist
+            if (navigationArgs.image != null) {
+                val tempImage = navigationArgs.image!!
+                imgAddImage.setImageURI(getImageFileFromCache(requireActivity(), tempImage).toUri())
+                tvAddImageName.text = tempImage
+            } else if (warranty.image != null) {
+                val image = warranty.image!!
+                imgAddImage.setImageURI(getImageFile(requireActivity(), image).toUri())
+                tvAddImageName.text = image
             }
         }
     }
 
     private fun addWarranty() {
+        val newImage = saveTempImage()
+
         sharedViewModel.addNewWarranty(
             warrantyName = binding.tilEtAddWarrantyName.text.toString(),
             expirationDate = expirationDateInMillis,
-            imageUri = navigationArgs.imageUri
+            image = newImage?.name
         )
         findNavController().navigate(R.id.action_addWarrantyFragment_to_warrantyListFragment)
     }
 
     private fun updateWarranty() {
+        val newImage = saveTempImage()
+
         //Delete old image if user have taken a new image when clicking save and if the warranty have an old image
-        if (navigationArgs.imageUri != null && warranty.imageUri != null) {
-            deleteFileByUri(warranty.imageUri!!.toUri(), requireActivity())
+        if (warranty.image != null && navigationArgs.image != null) {
+            val image = warranty.image!!
+            getImageFile(requireActivity(), image).delete()
         }
         val updatedWarranty = warranty.copy(
             warrantyName = binding.tilEtAddWarrantyName.text.toString(),
             expirationDate = expirationDateInMillis,
-            imageUri = navigationArgs.imageUri ?: warranty.imageUri
+            image = newImage?.name ?: warranty.image
         )
         sharedViewModel.updateWarranty(updatedWarranty)
         findNavController().navigate(R.id.action_addWarrantyFragment_to_warrantyListFragment)
     }
 
     private fun deleteWarranty() {
+        warranty.image?.let { getImageFile(requireActivity(), it).delete() }
         sharedViewModel.deleteWarranty(warranty)
         findNavController().navigate(R.id.action_addWarrantyFragment_to_warrantyListFragment)
     }
@@ -184,7 +186,6 @@ class AddWarrantyFragment : Fragment() {
             .setNegativeButton(getString(R.string.cancel)) { _, _ -> }
             .setPositiveButton(getString(R.string.yes)) { _, _ ->
                 deleteWarranty()
-                deleteFileByUri(warranty.imageUri!!.toUri(), requireActivity())
             }
             .show()
     }
@@ -207,12 +208,25 @@ class AddWarrantyFragment : Fragment() {
         }
     }
 
+    //Copy temp image to non-cache directory
+    private fun saveTempImage(): File? {
+        var newImage: File? = null
+        tempImage?.let { temp ->
+            newImage = getImageFile(requireActivity(), temp.name)
+            temp.copyTo(newImage!!)
+            temp.delete()
+        }
+        return newImage
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
-        //Delete unsaved image taken when exiting fragment
-        if (navigationArgs.imageUri != null && !isUsed) {
-            deleteFileByUri(navigationArgs.imageUri!!.toUri(), requireActivity())
-        }
+        tempImage?.delete()
         _binding = null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        tempImage?.delete()
     }
 }

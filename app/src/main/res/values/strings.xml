@@ -21,8 +21,7 @@
     <string name="edit_warranty_title_text">Edit Warranty</string>
     <string name="delete_text">Delete</string>
     <string name="cancel_text">Cancel</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="no_image_set_text">No image set</string>
     <string name="image_of_warranty_text">Image of warranty</string>
+    <string name="remaining_time_label_text">REMAINING</string>
 </resources>

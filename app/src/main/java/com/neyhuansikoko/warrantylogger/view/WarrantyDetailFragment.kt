@@ -10,12 +10,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.neyhuansikoko.warrantylogger.R
-import com.neyhuansikoko.warrantylogger.WarrantyLoggerApplication
+import com.neyhuansikoko.warrantylogger.*
 import com.neyhuansikoko.warrantylogger.database.Warranty
 import com.neyhuansikoko.warrantylogger.databinding.FragmentWarrantyDetailBinding
-import com.neyhuansikoko.warrantylogger.formatDateMillis
-import com.neyhuansikoko.warrantylogger.getImageFile
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModelFactory
 
@@ -86,6 +83,7 @@ class WarrantyDetailFragment : Fragment() {
         binding.apply {
             tvDetailWarrantyName.text = warranty.warrantyName
             tvDetailExpirationDate.text = formatDateMillis(warranty.expirationDate)
+            tvDetailRemainingTime.text = warranty.getRemainingTime()
 
             //Set image and image name, if it exist
             warranty.image?.let {

@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.divider.MaterialDividerItemDecoration
 import com.neyhuansikoko.warrantylogger.R
 import com.neyhuansikoko.warrantylogger.WarrantyListAdapter
 import com.neyhuansikoko.warrantylogger.WarrantyLoggerApplication
@@ -51,6 +52,7 @@ class WarrantyListFragment : Fragment() {
                 findNavController().navigate(action)
             }
             rvListWarranty.adapter = adapter
+            rvListWarranty.addItemDecoration(MaterialDividerItemDecoration(requireContext(), MaterialDividerItemDecoration.VERTICAL))
 
             //Fade the FAB when the user are scrolling down and show it when scrolling up
             rvListWarranty.addOnScrollListener(object : RecyclerView.OnScrollListener() {

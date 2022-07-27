@@ -7,7 +7,6 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.neyhuansikoko.warrantylogger.database.Warranty
 import com.neyhuansikoko.warrantylogger.databinding.ListItemWarrantyBinding
-import java.text.SimpleDateFormat
 
 class WarrantyListAdapter(
     private val clickListener: (Warranty) -> Unit
@@ -19,6 +18,7 @@ class WarrantyListAdapter(
             binding.apply {
                 tvItemWarrantyName.text = warranty.warrantyName
                 tvItemExpirationDate.text = formatDateMillis(warranty.expirationDate)
+                tvItemStatus.text = warranty.getRemainingTime()
             }
         }
     }

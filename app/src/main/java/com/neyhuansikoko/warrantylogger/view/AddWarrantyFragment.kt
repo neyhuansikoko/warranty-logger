@@ -61,13 +61,14 @@ class AddWarrantyFragment : Fragment() {
 
             tilEtAddExpirationDate.setOnClickListener {
                 val dateConstraints = CalendarConstraints.Builder()
-                    .setValidator(DateValidatorPointForward.now())
+                    .setValidator(DateValidatorPointForward.from(
+                        MaterialDatePicker.todayInUtcMilliseconds() + DAY_MILLIS))
                     .build()
                 val datePicker =
                     MaterialDatePicker.Builder.datePicker()
                         .setCalendarConstraints(dateConstraints)
                         .setTitleText("Select date")
-                        .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
+                        .setSelection(MaterialDatePicker.todayInUtcMilliseconds() + DAY_MILLIS)
                         .build()
                 datePicker.apply {
                     addOnPositiveButtonClickListener { date ->
@@ -159,14 +160,14 @@ class AddWarrantyFragment : Fragment() {
         val newImage = saveTempImage()
 
         //Delete old image if user have taken a new image when clicking save and if the warranty have an old image
-        if (warranty.image != null && navigationArgs.image != null) {
+        if (warranty.image != null && newImage != null) {
             val image = warranty.image!!
             getImageFile(requireActivity(), image).delete()
         }
         val updatedWarranty = warranty.copy(
             warrantyName = binding.tilEtAddWarrantyName.text.toString(),
             expirationDate = expirationDateInMillis,
-            image = newImage?.name ?: warranty.image
+            image = newImage?.name ?: warranty.image // if newImage is null, then warranty.image. if warranty.image is null, then null
         )
         sharedViewModel.updateWarranty(updatedWarranty)
         findNavController().navigate(R.id.action_addWarrantyFragment_to_warrantyListFragment)

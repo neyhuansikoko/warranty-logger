@@ -5,7 +5,6 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,16 +17,15 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.core.net.toFile
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
 import com.neyhuansikoko.warrantylogger.DEFAULT_MODEL
 import com.neyhuansikoko.warrantylogger.R
-import com.neyhuansikoko.warrantylogger.WarrantyLoggerApplication
+import com.neyhuansikoko.warrantylogger.TEMP_IMAGE_SUFFIX
+import com.neyhuansikoko.warrantylogger.compressImage
 import com.neyhuansikoko.warrantylogger.databinding.FragmentCameraBinding
-import com.neyhuansikoko.warrantylogger.log
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
-import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModelFactory
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -42,9 +40,7 @@ class CameraFragment : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
-    private val sharedViewModel: WarrantyViewModel by activityViewModels {
-        WarrantyViewModelFactory((activity?.applicationContext as WarrantyLoggerApplication).database.warrantyDao())
-    }
+    private val sharedViewModel: WarrantyViewModel by activityViewModels()
 
     private var imageCapture: ImageCapture? = null
     private lateinit var cameraExecutor: ExecutorService
@@ -97,7 +93,7 @@ class CameraFragment : Fragment() {
         val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
             .format(System.currentTimeMillis())
 
-        val file = File.createTempFile(name, ".jpg", requireActivity().cacheDir)
+        val file = File.createTempFile(name, TEMP_IMAGE_SUFFIX, requireActivity().cacheDir)
 
         val outputOptions = ImageCapture.OutputFileOptions.Builder(file).build()
 
@@ -116,7 +112,7 @@ class CameraFragment : Fragment() {
                     val msg = "Photo capture succeeded: $outputUri"
                     Toast.makeText(requireActivity().baseContext, msg, Toast.LENGTH_SHORT).show()
                     Log.d(TAG, msg)
-                    sharedViewModel.tempImage = outputUri?.toFile()
+                    sharedViewModel.tempImage = outputUri?.toFile()?.compressImage()
                     navigateToAddWarranty()
                 }
             }
@@ -158,9 +154,8 @@ class CameraFragment : Fragment() {
     }
 
     private fun navigateToAddWarranty() {
-        val id = sharedViewModel.modelWarranty.value?.id ?: DEFAULT_MODEL.id
         val action = CameraFragmentDirections.actionCameraFragmentToAddWarrantyFragment(
-            title = if (id > DEFAULT_MODEL.id) {
+            title = if (sharedViewModel.inputModel.id > DEFAULT_MODEL.id) {
                 getString(R.string.edit_warranty_title_text)
             } else {
                 getString(R.string.add_warranty_title_text)

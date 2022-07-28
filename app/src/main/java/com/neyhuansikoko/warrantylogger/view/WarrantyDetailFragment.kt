@@ -7,17 +7,16 @@ import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.neyhuansikoko.warrantylogger.*
+import com.neyhuansikoko.warrantylogger.R
 import com.neyhuansikoko.warrantylogger.database.Warranty
 import com.neyhuansikoko.warrantylogger.database.getRemainingTime
 import com.neyhuansikoko.warrantylogger.database.isValid
 import com.neyhuansikoko.warrantylogger.databinding.FragmentWarrantyDetailBinding
+import com.neyhuansikoko.warrantylogger.formatDateMillis
+import com.neyhuansikoko.warrantylogger.getImageFile
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
-import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModelFactory
-import kotlinx.coroutines.launch
 
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
@@ -30,9 +29,7 @@ class WarrantyDetailFragment : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
-    private val sharedViewModel: WarrantyViewModel by activityViewModels {
-        WarrantyViewModelFactory((activity?.applicationContext as WarrantyLoggerApplication).database.warrantyDao())
-    }
+    private val sharedViewModel: WarrantyViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -47,7 +44,7 @@ class WarrantyDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        sharedViewModel.modelWarranty.observe(viewLifecycleOwner) {
+        sharedViewModel.displayModel.observe(viewLifecycleOwner) {
             if (it.isValid()) {
                 bindModel(it)
             } else {
@@ -64,11 +61,9 @@ class WarrantyDetailFragment : Fragment() {
 
             //Set image and image name, if it exist
             warranty.image?.let { image ->
-                viewLifecycleOwner.lifecycleScope.launch {
-                    getImageFile(requireActivity(), image)?.let {
-                        imgDetailImage.setImageURI(it.toUri())
-                        tvDetailImageName.text = it.name
-                    }
+                getImageFile(requireActivity(), image)?.let {
+                    imgDetailImage.setImageURI(it.toUri())
+                    tvDetailImageName.text = it.name
                 }
             }
         }
@@ -119,17 +114,8 @@ class WarrantyDetailFragment : Fragment() {
     }
 
     private fun deleteWarranty() {
-        sharedViewModel.deleteWarranty(requireActivity())
+        sharedViewModel.deleteWarranty()
         findNavController().navigate(R.id.action_warrantyDetailFragment_to_warrantyListFragment)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        sharedViewModel.apply {
-            if (modelWarrantySignature != modelWarranty.hashCode()) {
-                resetModel()
-            }
-        }
     }
 
     override fun onDestroyView() {

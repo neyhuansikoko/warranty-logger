@@ -17,7 +17,7 @@ interface WarrantyDao {
 
     @Query("SELECT * FROM warranty ORDER BY expiration_date ASC")
     fun getAll(): Flow<List<Warranty>>
-
-    @Query("SELECT * FROM warranty WHERE id = :id")
-    suspend fun getById(id: Int): Warranty
+//
+//    @Query("SELECT * FROM warranty WHERE id = :id")
+//    suspend fun getById(id: Int): Warranty
 }

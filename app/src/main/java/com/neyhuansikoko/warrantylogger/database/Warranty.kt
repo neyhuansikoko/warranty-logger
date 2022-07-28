@@ -37,10 +37,6 @@ fun Warranty.isValid(): Boolean {
     return this.id > DEFAULT_MODEL.id
 }
 
-fun Warranty.same(warranty: Warranty): Boolean {
-    return this.id == warranty.id
-}
-
 //Used to delete stored image file
 fun Warranty.deleteImageFile(context: Context) {
     this.image?.let { image ->

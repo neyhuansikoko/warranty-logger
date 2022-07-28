@@ -1,11 +1,12 @@
 package com.neyhuansikoko.warrantylogger.view
 
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.DateValidatorPointForward
@@ -16,11 +17,6 @@ import com.neyhuansikoko.warrantylogger.database.Warranty
 import com.neyhuansikoko.warrantylogger.database.isValid
 import com.neyhuansikoko.warrantylogger.databinding.FragmentAddWarrantyBinding
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
-import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModelFactory
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 class AddWarrantyFragment : Fragment() {
 
@@ -30,12 +26,11 @@ class AddWarrantyFragment : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
-    private val sharedViewModel: WarrantyViewModel by activityViewModels {
-        WarrantyViewModelFactory((activity?.applicationContext as WarrantyLoggerApplication).database.warrantyDao())
-    }
+    private val sharedViewModel: WarrantyViewModel by activityViewModels()
 
     private val inputWarrantyName: String get() = binding.tilEtAddWarrantyName.text.toString()
     private val inputExpirationDate: String get() = binding.tilEtAddExpirationDate.text.toString()
+    private val model get() = sharedViewModel.inputModel
 
     private var onSaveClick: () -> Unit = {}
 
@@ -55,62 +50,58 @@ class AddWarrantyFragment : Fragment() {
 
     private fun bindModel() {
         binding.apply {
-            sharedViewModel.modelWarranty.value?.let { model ->
-                btnAddCancel.setOnClickListener {
-                    findNavController().navigateUp()
+            btnAddCancel.setOnClickListener {
+                findNavController().navigateUp()
+            }
+
+            tilEtAddWarrantyName.setText(model.warrantyName)
+            tilEtAddExpirationDate.setText(if (model.expirationDate > DEFAULT_MODEL.expirationDate) {
+                formatDateMillis(model.expirationDate)
+            } else {
+                getString(R.string.empty)
+            })
+
+            if (model.isValid()) {
+                btnAddDelete.setOnClickListener {
+                    showConfirmationDialog()
                 }
+                btnAddDelete.visibility = View.VISIBLE
 
-                tilEtAddWarrantyName.setText(model.warrantyName)
-                tilEtAddExpirationDate.setText(if (model.expirationDate > DEFAULT_MODEL.expirationDate) {
-                    formatDateMillis(model.expirationDate)
-                } else {
-                    getString(R.string.empty)
-                })
-
-                if (model.isValid()) {
-                    btnAddDelete.setOnClickListener {
-                        showConfirmationDialog()
-                    }
-                    btnAddDelete.visibility = View.VISIBLE
-
-                    onSaveClick = {
-                        sharedViewModel.updateWarranty(requireActivity())
-                    }
-                } else {
-                    onSaveClick = {
-                        sharedViewModel.insertWarranty(requireActivity())
-                    }
+                onSaveClick = {
+                    sharedViewModel.updateWarranty()
                 }
-
-                btnAddSave.setOnClickListener {
-                    if (!isTextFieldEmpty()) {
-                        model.warrantyName = inputWarrantyName
-                        onSaveClick()
-                        findNavController().navigate(R.id.action_addWarrantyFragment_to_warrantyListFragment)
-                    }
+            } else {
+                onSaveClick = {
+                    sharedViewModel.insertWarranty()
                 }
+            }
 
-                btnAddTakePicture.setOnClickListener {
+            btnAddSave.setOnClickListener {
+                if (!isTextFieldEmpty()) {
                     model.warrantyName = inputWarrantyName
-                    navigateToCamera()
+                    onSaveClick()
+                    findNavController().navigate(R.id.action_addWarrantyFragment_to_warrantyListFragment)
                 }
+            }
 
-                //Check if tempImage exist and load it, if not then try to load from modelWarranty
-                viewLifecycleOwner.lifecycleScope.launch {
-                    sharedViewModel.tempImage?.let {
-                        imgAddImage.setImageURI(it.toUri())
-                        tvAddImageName.text = it.name
-                    } ?: model.image?.let { image ->
-                        getImageFile(requireActivity(), image)?.let {
-                            imgAddImage.setImageURI(it.toUri())
-                            tvAddImageName.text = it.name
-                        }
-                    }
-                }
+            btnAddTakePicture.setOnClickListener {
+                model.warrantyName = inputWarrantyName
+                navigateToCamera()
+            }
 
-                tilEtAddExpirationDate.setOnClickListener {
-                    showDatePicker(model)
+            //Check if tempImage exist and load it, if not then try to load from modelWarranty
+            sharedViewModel.tempImage?.let {
+                imgAddImage.setImageURI(it.toUri())
+                tvAddImageName.text = it.name
+            } ?: model.image?.let { image ->
+                getImageFile(requireActivity(), image)?.let {
+                    imgAddImage.setImageURI(it.toUri())
+                    tvAddImageName.text = it.name
                 }
+            }
+
+            tilEtAddExpirationDate.setOnClickListener {
+                showDatePicker(model)
             }
         }
     }
@@ -132,7 +123,7 @@ class AddWarrantyFragment : Fragment() {
     }
 
     private fun deleteWarranty() {
-        sharedViewModel.deleteWarranty(requireActivity())
+        sharedViewModel.deleteWarranty()
         findNavController().navigate(R.id.action_addWarrantyFragment_to_warrantyListFragment)
     }
 
@@ -182,7 +173,6 @@ class AddWarrantyFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        sharedViewModel.clearTempImage()
         _binding = null
     }
 }

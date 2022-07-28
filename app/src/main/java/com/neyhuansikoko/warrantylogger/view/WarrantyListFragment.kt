@@ -1,20 +1,19 @@
 package com.neyhuansikoko.warrantylogger.view
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.divider.MaterialDividerItemDecoration
+import com.neyhuansikoko.warrantylogger.DEFAULT_MODEL
 import com.neyhuansikoko.warrantylogger.R
 import com.neyhuansikoko.warrantylogger.WarrantyListAdapter
-import com.neyhuansikoko.warrantylogger.WarrantyLoggerApplication
 import com.neyhuansikoko.warrantylogger.databinding.FragmentWarrantyListBinding
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
-import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModelFactory
 
 class WarrantyListFragment : Fragment() {
 
@@ -24,9 +23,7 @@ class WarrantyListFragment : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
-    private val sharedViewModel: WarrantyViewModel by activityViewModels {
-        WarrantyViewModelFactory((activity?.applicationContext as WarrantyLoggerApplication).database.warrantyDao())
-    }
+    private val sharedViewModel: WarrantyViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,14 +39,16 @@ class WarrantyListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.apply {
+
             fabList.setOnClickListener {
                 val action = WarrantyListFragmentDirections.actionWarrantyListFragmentToAddWarrantyFragment(title = getString(R.string.add_warranty_title_text))
                 findNavController().navigate(action)
             }
 
             val adapter = WarrantyListAdapter {
-                val action = WarrantyListFragmentDirections.actionWarrantyListFragmentToWarrantyDetailFragment(it.id)
-                findNavController().navigate(action)
+                sharedViewModel.displayModel.value = it //Get reference
+                sharedViewModel.inputModel = it.copy() //Get value
+                findNavController().navigate(R.id.action_warrantyListFragment_to_warrantyDetailFragment)
             }
             rvListWarranty.adapter = adapter
             rvListWarranty.addItemDecoration(MaterialDividerItemDecoration(requireContext(), MaterialDividerItemDecoration.VERTICAL))
@@ -72,6 +71,12 @@ class WarrantyListFragment : Fragment() {
             //TODO: Remove
 //            sharedViewModel.testInsertTwentyWarranty()
         }
+    }
+
+    override fun onResume() {
+        sharedViewModel.displayModel.value = DEFAULT_MODEL
+        sharedViewModel.inputModel = DEFAULT_MODEL
+        super.onResume()
     }
 
     override fun onDestroyView() {

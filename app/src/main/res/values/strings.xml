@@ -24,4 +24,6 @@
     <string name="no_image_set_text">No image set</string>
     <string name="image_of_warranty_text">Image of warranty</string>
     <string name="remaining_time_label_text">REMAINING</string>
+    <string name="remaining_time_long_label_text">Remaining Time</string>
+    <string name="empty" />
 </resources>

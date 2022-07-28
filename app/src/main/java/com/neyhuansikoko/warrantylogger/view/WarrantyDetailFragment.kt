@@ -8,13 +8,15 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.neyhuansikoko.warrantylogger.*
+import com.neyhuansikoko.warrantylogger.R
 import com.neyhuansikoko.warrantylogger.database.Warranty
+import com.neyhuansikoko.warrantylogger.database.getRemainingTime
+import com.neyhuansikoko.warrantylogger.database.isValid
 import com.neyhuansikoko.warrantylogger.databinding.FragmentWarrantyDetailBinding
+import com.neyhuansikoko.warrantylogger.formatDateMillis
+import com.neyhuansikoko.warrantylogger.getImageFile
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
-import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModelFactory
 
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
@@ -27,14 +29,7 @@ class WarrantyDetailFragment : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
-    private val navigationArgs: WarrantyDetailFragmentArgs by navArgs()
-    private val warrantyId: Int by lazy { navigationArgs.id }
-
-    private val sharedViewModel: WarrantyViewModel by activityViewModels {
-        WarrantyViewModelFactory((activity?.applicationContext as WarrantyLoggerApplication).database.warrantyDao())
-    }
-
-    private lateinit var warranty: Warranty
+    private val sharedViewModel: WarrantyViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -49,16 +44,38 @@ class WarrantyDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        sharedViewModel.getWarrantyById(warrantyId).observe(viewLifecycleOwner) {
-            it?.let {
-                warranty = it
-                bind(warranty)
+        sharedViewModel.displayModel.observe(viewLifecycleOwner) {
+            if (it.isValid()) {
+                bindModel(it)
+            } else {
+                findNavController().navigateUp()
+            }
+        }
+    }
+
+    private fun bindModel(warranty: Warranty) {
+        binding.apply {
+            tvDetailWarrantyName.text = warranty.warrantyName
+            tvDetailExpirationDate.text = formatDateMillis(warranty.expirationDate)
+            tvDetailRemainingTime.text = warranty.getRemainingTime()
+
+            //Set image and image name, if it exist
+            warranty.image?.let { image ->
+                getImageFile(requireActivity(), image)?.let {
+                    imgDetailImage.setImageURI(it.toUri())
+                    tvDetailImageName.text = it.name
+                }
             }
         }
 
+        setupOptionMenu()
+    }
+
+    private fun setupOptionMenu() {
         //Create option menu
         requireActivity().addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menu.clear()
                 menuInflater.inflate(R.menu.menu_detail, menu)
             }
 
@@ -79,32 +96,9 @@ class WarrantyDetailFragment : Fragment() {
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
-    private fun bind(warranty: Warranty) {
-        binding.apply {
-            tvDetailWarrantyName.text = warranty.warrantyName
-            tvDetailExpirationDate.text = formatDateMillis(warranty.expirationDate)
-            tvDetailRemainingTime.text = warranty.getRemainingTime()
-
-            //Set image and image name, if it exist
-            warranty.image?.let {
-                imgDetailImage.setImageURI(getImageFile(requireActivity(), it).toUri())
-                tvDetailImageName.text = it
-            }
-        }
-    }
-
     private fun editWarranty() {
-        val action = WarrantyDetailFragmentDirections.actionWarrantyDetailFragmentToAddWarrantyFragment(
-            id = warrantyId,
-            title = getString(R.string.edit_warranty_title_text)
-        )
+        val action = WarrantyDetailFragmentDirections.actionWarrantyDetailFragmentToAddWarrantyFragment(title = getString(R.string.edit_warranty_title_text))
         findNavController().navigate(action)
-    }
-
-    private fun deleteWarranty() {
-        warranty.image?.let { getImageFile(requireActivity(), it).delete() }
-        sharedViewModel.deleteWarranty(warranty)
-        findNavController().navigate(R.id.action_warrantyDetailFragment_to_warrantyListFragment)
     }
 
     private fun showConfirmationDialog() {
@@ -117,6 +111,11 @@ class WarrantyDetailFragment : Fragment() {
                 deleteWarranty()
             }
             .show()
+    }
+
+    private fun deleteWarranty() {
+        sharedViewModel.deleteWarranty()
+        findNavController().navigate(R.id.action_warrantyDetailFragment_to_warrantyListFragment)
     }
 
     override fun onDestroyView() {

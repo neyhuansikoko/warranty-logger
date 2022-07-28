@@ -5,7 +5,6 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,10 +17,15 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.core.net.toFile
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
+import com.neyhuansikoko.warrantylogger.DEFAULT_MODEL
 import com.neyhuansikoko.warrantylogger.R
+import com.neyhuansikoko.warrantylogger.TEMP_IMAGE_SUFFIX
+import com.neyhuansikoko.warrantylogger.compressImage
 import com.neyhuansikoko.warrantylogger.databinding.FragmentCameraBinding
+import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -36,13 +40,10 @@ class CameraFragment : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
-    private val navigationArgs: CameraFragmentArgs by navArgs()
+    private val sharedViewModel: WarrantyViewModel by activityViewModels()
 
     private var imageCapture: ImageCapture? = null
     private lateinit var cameraExecutor: ExecutorService
-
-//    private var imageUri: String? = null
-    private var image: String? = null
 
     private val requestMultiplePermissions = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -92,7 +93,7 @@ class CameraFragment : Fragment() {
         val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
             .format(System.currentTimeMillis())
 
-        val file = File.createTempFile(name, ".jpg", requireActivity().cacheDir)
+        val file = File.createTempFile(name, TEMP_IMAGE_SUFFIX, requireActivity().cacheDir)
 
         val outputOptions = ImageCapture.OutputFileOptions.Builder(file).build()
 
@@ -107,11 +108,11 @@ class CameraFragment : Fragment() {
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults){
-                    val outputUriString = output.savedUri.toString()
-                    val msg = "Photo capture succeeded: $outputUriString"
+                    val outputUri = output.savedUri
+                    val msg = "Photo capture succeeded: $outputUri"
                     Toast.makeText(requireActivity().baseContext, msg, Toast.LENGTH_SHORT).show()
                     Log.d(TAG, msg)
-                    output.savedUri?.let { image = it.toFile().name }
+                    sharedViewModel.tempImage = outputUri?.toFile()?.compressImage()
                     navigateToAddWarranty()
                 }
             }
@@ -154,15 +155,11 @@ class CameraFragment : Fragment() {
 
     private fun navigateToAddWarranty() {
         val action = CameraFragmentDirections.actionCameraFragmentToAddWarrantyFragment(
-            id = navigationArgs.id,
-            title = if (navigationArgs.id > 0) {
+            title = if (sharedViewModel.inputModel.id > DEFAULT_MODEL.id) {
                 getString(R.string.edit_warranty_title_text)
             } else {
                 getString(R.string.add_warranty_title_text)
-            },
-            image = this.image,
-            inputWarrantyName = navigationArgs.inputWarrantyName,
-            inputExpirationDate = navigationArgs.inputExpirationDate
+            }
         )
         findNavController().navigate(action)
     }

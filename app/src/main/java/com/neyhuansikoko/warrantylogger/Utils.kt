@@ -1,46 +1,77 @@
 package com.neyhuansikoko.warrantylogger
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.util.Log
+import androidx.exifinterface.media.ExifInterface
+import com.google.android.material.datepicker.MaterialDatePicker
 import com.neyhuansikoko.warrantylogger.database.Warranty
 import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import java.text.SimpleDateFormat
-import java.util.*
-import kotlin.math.ceil
 
 fun log(message: String) {
     Log.d("Test", message)
 }
 
-const val DAY_MILLIS: Long = 86400000
-const val MONTH_MILLIS: Long = 2629800000
-const val YEAR_MILLIS: Long = 31557600000
+fun logPing() {
+    log("Ping!")
+}
 
+var DEFAULT_DATE_SELECTION: Long = MaterialDatePicker.todayInUtcMilliseconds() + DAY_MILLIS
+
+private val _DEFAULT_MODEL = Warranty(
+    warrantyName = "",
+    expirationDate = 0,
+    image = null
+)
+val DEFAULT_MODEL get() = _DEFAULT_MODEL.copy()
 
 fun formatDateMillis(dateMillis: Long): String = SimpleDateFormat("dd/MM/yyyy").format(dateMillis)
 
-fun getImageFile(context: Context, image: String): File {
+fun getImageFile(context: Context, image: String): File? {
+    val imageDir = File(context.filesDir, IMAGE_DIR)
+    val imageFile = File(imageDir, image)
+
+    return if (imageFile.exists()) {
+        imageFile
+    } else {
+        null
+    }
+}
+
+//Return file even if it doesn't exist
+fun getImageFileAbs(context: Context, image: String): File {
     val imageDir = File(context.filesDir, IMAGE_DIR)
     return File(imageDir, image)
 }
 
-fun getImageFileFromCache(context: Context, image: String): File {
-    return File(context.cacheDir, image)
+fun clearCache(context: Context) {
+    val dir = context.cacheDir
+    dir.deleteRecursively()
 }
 
-fun Warranty.getRemainingTime(): String {
-    val currentDay = Calendar.getInstance().timeInMillis
-    val remainingDays = (ceil(expirationDate.toDouble() / DAY_MILLIS) - ceil(currentDay.toDouble() / DAY_MILLIS)).toInt() + 1
-    val remainingMonths = (ceil(expirationDate.toDouble() / MONTH_MILLIS) - ceil(currentDay.toDouble() / MONTH_MILLIS)).toInt()
-    val remainingYear = (ceil(expirationDate.toDouble() / YEAR_MILLIS) - ceil(currentDay.toDouble() / YEAR_MILLIS)).toInt()
-
-    return if (remainingDays < 1) {
-        "expired"
-    } else if (remainingDays < 30) {
-        "$remainingDays ${if (remainingDays > 1) "days" else "day"}"
-    } else if (remainingMonths < 12) {
-        "$remainingMonths ${if (remainingMonths > 1) "months" else "month"}"
-    } else {
-        "$remainingYear ${if (remainingYear > 1) "years" else "year"}"
+fun File.compressImage(): File {
+    val exifOrientation = ExifInterface(this).getAttribute(ExifInterface.TAG_ORIENTATION)
+    val bitmap = BitmapFactory.decodeFile(this.path)
+    var out: FileOutputStream? = null
+    try {
+        out = FileOutputStream(this)
+        bitmap.compress(Bitmap.CompressFormat.JPEG, COMPRESSION_QUALITY /* ignored for PNG */, out)
+    } finally {
+        out?.let {
+            try {
+                it.close()
+            } catch (ignore: IOException) {
+            }
+        }
     }
+    ExifInterface(this).apply {
+        setAttribute(ExifInterface.TAG_ORIENTATION, exifOrientation)
+        saveAttributes()
+    }
+
+    return this
 }

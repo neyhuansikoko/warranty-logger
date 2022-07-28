@@ -2,11 +2,11 @@ package com.neyhuansikoko.warrantylogger
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.neyhuansikoko.warrantylogger.database.Warranty
+import com.neyhuansikoko.warrantylogger.database.getRemainingTime
 import com.neyhuansikoko.warrantylogger.databinding.ListItemWarrantyBinding
 
 class WarrantyListAdapter(

@@ -9,6 +9,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.divider.MaterialDividerItemDecoration
+import com.neyhuansikoko.warrantylogger.DEFAULT_MODEL
 import com.neyhuansikoko.warrantylogger.R
 import com.neyhuansikoko.warrantylogger.WarrantyListAdapter
 import com.neyhuansikoko.warrantylogger.WarrantyLoggerApplication
@@ -42,14 +43,16 @@ class WarrantyListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.apply {
+
             fabList.setOnClickListener {
                 val action = WarrantyListFragmentDirections.actionWarrantyListFragmentToAddWarrantyFragment(title = getString(R.string.add_warranty_title_text))
                 findNavController().navigate(action)
             }
 
             val adapter = WarrantyListAdapter {
-                val action = WarrantyListFragmentDirections.actionWarrantyListFragmentToWarrantyDetailFragment(it.id)
-                findNavController().navigate(action)
+                sharedViewModel.modelWarranty.value = it
+                sharedViewModel.modelWarrantySignature = it.hashCode()
+                findNavController().navigate(R.id.action_warrantyListFragment_to_warrantyDetailFragment)
             }
             rvListWarranty.adapter = adapter
             rvListWarranty.addItemDecoration(MaterialDividerItemDecoration(requireContext(), MaterialDividerItemDecoration.VERTICAL))
@@ -72,6 +75,11 @@ class WarrantyListFragment : Fragment() {
             //TODO: Remove
 //            sharedViewModel.testInsertTwentyWarranty()
         }
+    }
+
+    override fun onResume() {
+        sharedViewModel.modelWarranty.value = DEFAULT_MODEL
+        super.onResume()
     }
 
     override fun onDestroyView() {

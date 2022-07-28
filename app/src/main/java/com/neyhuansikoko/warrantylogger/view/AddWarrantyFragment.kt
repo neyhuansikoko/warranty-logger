@@ -5,18 +5,22 @@ import android.view.*
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.DateValidatorPointForward
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.neyhuansikoko.warrantylogger.*
 import com.neyhuansikoko.warrantylogger.database.Warranty
+import com.neyhuansikoko.warrantylogger.database.isValid
 import com.neyhuansikoko.warrantylogger.databinding.FragmentAddWarrantyBinding
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModelFactory
-import java.io.File
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class AddWarrantyFragment : Fragment() {
 
@@ -26,21 +30,14 @@ class AddWarrantyFragment : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
-    private val navigationArgs: AddWarrantyFragmentArgs by navArgs()
-    private val warrantyId: Int  by lazy { navigationArgs.id }
-    private val tempImage: File? by lazy { navigationArgs.image?.let { getImageFileFromCache(requireActivity(), it) } }
-    private val inputWarrantyName by lazy { navigationArgs.inputWarrantyName }
-    private val inputExpirationDate by lazy { navigationArgs.inputExpirationDate }
-
-    private lateinit var warranty: Warranty
-
-    private var defaultSelection: Long = 0
-    private var expirationDateInMillis: Long = 0
-    private var warrantyName: String = ""
-
     private val sharedViewModel: WarrantyViewModel by activityViewModels {
         WarrantyViewModelFactory((activity?.applicationContext as WarrantyLoggerApplication).database.warrantyDao())
     }
+
+    private val inputWarrantyName: String get() = binding.tilEtAddWarrantyName.text.toString()
+    private val inputExpirationDate: String get() = binding.tilEtAddExpirationDate.text.toString()
+
+    private var onSaveClick: () -> Unit = {}
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -53,158 +50,73 @@ class AddWarrantyFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        if (warrantyId > 0) {
-            setupEditWarranty()
-        } else {
-            setupAddWarranty()
-        }
-
-        binding.apply {
-            btnAddCancel.setOnClickListener { findNavController().navigateUp() }
-
-            defaultSelection = MaterialDatePicker.todayInUtcMilliseconds() + DAY_MILLIS
-
-            tilEtAddExpirationDate.setOnClickListener {
-                val dateConstraints = CalendarConstraints.Builder()
-                    .setValidator(DateValidatorPointForward.from(MaterialDatePicker.todayInUtcMilliseconds() + DAY_MILLIS))
-                    .build()
-                val datePicker =
-                    MaterialDatePicker.Builder.datePicker()
-                        .setCalendarConstraints(dateConstraints)
-                        .setTitleText("Select date")
-                        .setSelection(defaultSelection)
-                        .build()
-                datePicker.apply {
-                    addOnPositiveButtonClickListener { date ->
-                        expirationDateInMillis = date
-                        defaultSelection = expirationDateInMillis
-                        binding.tilEtAddExpirationDate.setText(formatDateMillis(expirationDateInMillis))
-                    }
-                    isCancelable = false
-                    show(this@AddWarrantyFragment.requireActivity().supportFragmentManager, "tag")
-                }
-            }
-        }
+        bindModel()
     }
 
-    private fun setupAddWarranty() {
+    private fun bindModel() {
         binding.apply {
-            tilEtAddWarrantyName.setText(inputWarrantyName.ifEmpty { null })
-            if (inputExpirationDate > 0) {
-                expirationDateInMillis = inputExpirationDate
-                tilEtAddExpirationDate.setText(formatDateMillis(expirationDateInMillis))
-            }
-
-            tempImage?.let {
-                imgAddImage.setImageURI(it.toUri())
-                tvAddImageName.text = it.name
-            }
-            btnAddSave.setOnClickListener {
-                if (!isTextFieldEmpty()) {
-                    addWarranty()
+            sharedViewModel.modelWarranty.value?.let { model ->
+                btnAddCancel.setOnClickListener {
+                    findNavController().navigateUp()
                 }
-            }
-            btnAddTakePicture.setOnClickListener {
-                warrantyName = binding.tilEtAddWarrantyName.text.toString()
-                val action = AddWarrantyFragmentDirections.actionAddWarrantyFragmentToCameraFragment(
-                    inputWarrantyName = warrantyName,
-                    inputExpirationDate = expirationDateInMillis
-                )
-                findNavController().navigate(action)
-            }
-        }
-    }
 
-    private fun setupEditWarranty() {
-        sharedViewModel.getWarrantyById(warrantyId).observe(viewLifecycleOwner) {
-            it?.let {
-                warranty = it
-                bind(warranty)
+                tilEtAddWarrantyName.setText(model.warrantyName)
+                tilEtAddExpirationDate.setText(if (model.expirationDate > DEFAULT_MODEL.expirationDate) {
+                    formatDateMillis(model.expirationDate)
+                } else {
+                    getString(R.string.empty)
+                })
 
-                binding.apply {
-                    btnAddSave.setOnClickListener {
-                        if (!isTextFieldEmpty()) {
-                            updateWarranty()
-                        }
-                    }
-
+                if (model.isValid()) {
                     btnAddDelete.setOnClickListener {
                         showConfirmationDialog()
                     }
                     btnAddDelete.visibility = View.VISIBLE
 
-                    btnAddTakePicture.setOnClickListener {
-                        warrantyName = binding.tilEtAddWarrantyName.text.toString()
-                        val action = AddWarrantyFragmentDirections.actionAddWarrantyFragmentToCameraFragment(
-                            id = warrantyId,
-                            inputWarrantyName = warrantyName,
-                            inputExpirationDate = expirationDateInMillis
-                        )
-                        findNavController().navigate(action)
+                    onSaveClick = {
+                        sharedViewModel.updateWarranty(requireActivity())
                     }
+                } else {
+                    onSaveClick = {
+                        sharedViewModel.insertWarranty(requireActivity())
+                    }
+                }
+
+                btnAddSave.setOnClickListener {
+                    if (!isTextFieldEmpty()) {
+                        model.warrantyName = inputWarrantyName
+                        onSaveClick()
+                        findNavController().navigate(R.id.action_addWarrantyFragment_to_warrantyListFragment)
+                    }
+                }
+
+                btnAddTakePicture.setOnClickListener {
+                    model.warrantyName = inputWarrantyName
+                    navigateToCamera()
+                }
+
+                //Check if tempImage exist and load it, if not then try to load from modelWarranty
+                viewLifecycleOwner.lifecycleScope.launch {
+                    sharedViewModel.tempImage?.let {
+                        imgAddImage.setImageURI(it.toUri())
+                        tvAddImageName.text = it.name
+                    } ?: model.image?.let { image ->
+                        getImageFile(requireActivity(), image)?.let {
+                            imgAddImage.setImageURI(it.toUri())
+                            tvAddImageName.text = it.name
+                        }
+                    }
+                }
+
+                tilEtAddExpirationDate.setOnClickListener {
+                    showDatePicker(model)
                 }
             }
         }
     }
 
-    private fun bind(warranty: Warranty) {
-        binding.apply {
-            tilEtAddWarrantyName.setText(inputWarrantyName.ifEmpty { warranty.warrantyName })
-            expirationDateInMillis = if (inputExpirationDate > 0) {
-                defaultSelection = inputExpirationDate
-                defaultSelection
-            } else {
-                defaultSelection = warranty.expirationDate
-                defaultSelection
-            }
-            tilEtAddExpirationDate.setText(formatDateMillis(expirationDateInMillis))
-
-            //Set image and image name, if it exist
-            if (navigationArgs.image != null) {
-                val tempImage = navigationArgs.image!!
-                imgAddImage.setImageURI(getImageFileFromCache(requireActivity(), tempImage).toUri())
-                tvAddImageName.text = tempImage
-            } else if (warranty.image != null) {
-                val image = warranty.image!!
-                imgAddImage.setImageURI(getImageFile(requireActivity(), image).toUri())
-                tvAddImageName.text = image
-            }
-        }
-    }
-
-    private fun addWarranty() {
-        val newImage = saveTempImage()
-
-        sharedViewModel.addNewWarranty(
-            warrantyName = binding.tilEtAddWarrantyName.text.toString(),
-            expirationDate = expirationDateInMillis,
-            image = newImage?.name
-        )
-        findNavController().navigate(R.id.action_addWarrantyFragment_to_warrantyListFragment)
-    }
-
-    private fun updateWarranty() {
-        val newImage = saveTempImage()
-
-        //Delete old image if user have taken a new image when clicking save and if the warranty have an old image
-        if (warranty.image != null && newImage != null) {
-            val image = warranty.image!!
-            getImageFile(requireActivity(), image).delete()
-        }
-        val updatedWarranty = warranty.copy(
-            warrantyName = binding.tilEtAddWarrantyName.text.toString(),
-            expirationDate = expirationDateInMillis,
-            image = newImage?.name ?: warranty.image // if newImage is null, then warranty.image. if warranty.image is null, then null
-        )
-        sharedViewModel.updateWarranty(updatedWarranty)
-        findNavController().navigate(R.id.action_addWarrantyFragment_to_warrantyListFragment)
-    }
-
-    private fun deleteWarranty() {
-        warranty.image?.let { getImageFile(requireActivity(), it).delete() }
-        sharedViewModel.deleteWarranty(warranty)
-        findNavController().navigate(R.id.action_addWarrantyFragment_to_warrantyListFragment)
+    private fun navigateToCamera() {
+        findNavController().navigate(R.id.action_addWarrantyFragment_to_cameraFragment)
     }
 
     private fun showConfirmationDialog() {
@@ -219,43 +131,58 @@ class AddWarrantyFragment : Fragment() {
             .show()
     }
 
+    private fun deleteWarranty() {
+        sharedViewModel.deleteWarranty(requireActivity())
+        findNavController().navigate(R.id.action_addWarrantyFragment_to_warrantyListFragment)
+    }
+
     private fun isTextFieldEmpty(): Boolean {
+        setError()
+        return inputWarrantyName.isBlank() || inputExpirationDate.isBlank()
+    }
+
+    private fun setError() {
         binding.apply {
-            return if (!tilEtAddWarrantyName.text.isNullOrBlank() && expirationDateInMillis > 0) {
-                tilAddWarrantyName.error = null
-                tilAddExpirationDate.error = null
-                false
+            tilEtAddWarrantyName.error = if (inputWarrantyName.isBlank()) {
+                getString(R.string.warranty_name_error_text)
             } else {
-                if (tilEtAddWarrantyName.text.isNullOrBlank()) {
-                    tilAddWarrantyName.error = getString(R.string.warranty_name_error_text)
-                }
-                if (tilEtAddExpirationDate.text.isNullOrBlank()) {
-                    tilAddExpirationDate.error = getString(R.string.expiration_date_error_text)
-                }
-                true
+                null
+            }
+            tilEtAddExpirationDate.error = if (inputExpirationDate.isBlank()) {
+                getString(R.string.warranty_name_error_text)
+            } else {
+                null
             }
         }
     }
 
-    //Copy temp image to non-cache directory
-    private fun saveTempImage(): File? {
-        var newImage: File? = null
-        tempImage?.let { temp ->
-            newImage = getImageFile(requireActivity(), temp.name)
-            temp.copyTo(newImage!!)
-            temp.delete()
+    private fun showDatePicker(warranty: Warranty) {
+        val dateConstraints = CalendarConstraints.Builder()
+            .setValidator(DateValidatorPointForward.from(DEFAULT_DATE_SELECTION))
+            .build()
+        val datePicker =
+            MaterialDatePicker.Builder.datePicker()
+                .setCalendarConstraints(dateConstraints)
+                .setTitleText("Select date")
+                .setSelection(
+                    warranty.expirationDate.takeIf {
+                        it > DEFAULT_MODEL.expirationDate
+                    } ?: DEFAULT_DATE_SELECTION
+                )
+                .build()
+        datePicker.apply {
+            this.addOnPositiveButtonClickListener { date ->
+                warranty.expirationDate = date
+                binding.tilEtAddExpirationDate.setText(formatDateMillis(warranty.expirationDate))
+            }
+            this.isCancelable = false
+            show(this@AddWarrantyFragment.requireActivity().supportFragmentManager, "tag")
         }
-        return newImage
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        tempImage?.delete()
+        sharedViewModel.clearTempImage()
         _binding = null
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        tempImage?.delete()
     }
 }

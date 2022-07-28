@@ -1,42 +1,108 @@
 package com.neyhuansikoko.warrantylogger.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.*
-import com.neyhuansikoko.warrantylogger.database.Warranty
-import com.neyhuansikoko.warrantylogger.database.WarrantyDao
+import com.neyhuansikoko.warrantylogger.DEFAULT_MODEL
+import com.neyhuansikoko.warrantylogger.database.*
+import com.neyhuansikoko.warrantylogger.getImageFile
+import com.neyhuansikoko.warrantylogger.getImageFileAbs
+import com.neyhuansikoko.warrantylogger.log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.util.*
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import java.io.File
 
 class WarrantyViewModel(private val warrantyDao: WarrantyDao): ViewModel() {
 
+    val modelWarranty: MutableLiveData<Warranty> = MutableLiveData(DEFAULT_MODEL)
+    var modelWarrantySignature: Int = 0
+
     val allWarranties: LiveData<List<Warranty>> = warrantyDao.getAll().asLiveData()
+    var tempImage: File? = null
 
-    fun getWarrantyById(id: Int): LiveData<Warranty> = warrantyDao.getById(id).asLiveData()
-
-    fun addNewWarranty(warrantyName: String, expirationDate: Long, image: String?) {
-        val newWarranty = getNewWarrantyEntry(warrantyName, expirationDate, image)
-        insertWarranty(newWarranty)
+    fun resetModel() {
+        modelWarranty.value?.let { model ->
+            if (model.isValid()) {
+                viewModelScope.launch(Dispatchers.IO) {
+                    val defaultModel = warrantyDao.getById(model.id)
+                    withContext(Dispatchers.Main) {
+                        modelWarranty.value = defaultModel
+                    }
+                }
+            } else {
+                modelWarranty.value = DEFAULT_MODEL
+            }
+        }
     }
 
-    private fun getNewWarrantyEntry(warrantyName: String, expirationDate: Long, image: String?): Warranty {
-        return Warranty(
-            warrantyName = warrantyName,
-            expirationDate = expirationDate,
-            image = image
-        )
+    fun insertWarranty(context: Context) {
+        modelWarranty.value?.let { model ->
+            viewModelScope.launch(Dispatchers.IO) {
+                runBlocking {
+                    saveTempImage(context)?.let { newImage ->
+                        model.image = newImage.name
+                    }
+
+                    warrantyDao.insert(model)
+                }
+            }
+        }
     }
 
+    fun updateWarranty(context: Context) {
+        modelWarranty.value?.let { model ->
+            if (model.isValid()) {
+                viewModelScope.launch(Dispatchers.IO) {
+                    //Needed to run instructions in order
+                    runBlocking {
+                        saveTempImage(context)?.let { newImage ->
+                            model.deleteImageFile(context)
+                            model.image = newImage.name
+                        }
 
-    private fun insertWarranty(newWarranty: Warranty) {
-        viewModelScope.launch(Dispatchers.IO) { warrantyDao.insert(newWarranty) }
+                        warrantyDao.update(model)
+
+                        withContext(Dispatchers.Main) {
+                            modelWarrantySignature = model.hashCode()
+                        }
+                    }
+                }
+            }
+        }
     }
 
-    fun updateWarranty(warranty: Warranty) {
-        viewModelScope.launch(Dispatchers.IO) { warrantyDao.update(warranty) }
+    fun deleteWarranty(context: Context) {
+        modelWarranty.value?.let { model ->
+            if (model.isValid()) {
+                viewModelScope.launch(Dispatchers.IO) {
+                    model.deleteImageFile(context)
+
+                    warrantyDao.delete(model)
+                    withContext(Dispatchers.Main) {
+                        modelWarranty.value = DEFAULT_MODEL
+                    }
+                }
+            }
+        }
     }
 
-    fun deleteWarranty(warranty: Warranty) {
-        viewModelScope.launch(Dispatchers.IO) { warrantyDao.delete(warranty) }
+    //Copy temp image to non-cache directory
+     private fun saveTempImage(context: Context): File? {
+        var newImage: File? = null
+        tempImage?.let { temp ->
+            newImage = getImageFileAbs(context.applicationContext, temp.name)
+            temp.copyTo(newImage!!)
+            temp.delete()
+        }
+        return newImage
+    }
+
+    fun clearTempImage() {
+        tempImage?.let {
+            it.delete()
+            tempImage = null
+        }
     }
 
     //TODO: Remove
@@ -47,6 +113,11 @@ class WarrantyViewModel(private val warrantyDao: WarrantyDao): ViewModel() {
 //            addNewWarranty("TestObject #$i", date.timeInMillis, null)
 //        }
 //    }
+
+    override fun onCleared() {
+        super.onCleared()
+        clearTempImage()
+    }
 }
 
 class WarrantyViewModelFactory(private val warrantyDao: WarrantyDao) : ViewModelProvider.Factory {

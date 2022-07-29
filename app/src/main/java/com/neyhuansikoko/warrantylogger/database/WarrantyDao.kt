@@ -15,6 +15,9 @@ interface WarrantyDao {
     @Delete
     suspend fun delete(warranty: Warranty)
 
+    @Query("DELETE FROM warranty WHERE id IN (:list)")
+    fun deleteSelected(list: List<Int>)
+
     @Query("SELECT * FROM warranty ORDER BY expiration_date ASC")
     fun getAll(): Flow<List<Warranty>>
 //

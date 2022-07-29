@@ -10,16 +10,26 @@ import com.neyhuansikoko.warrantylogger.database.getRemainingTime
 import com.neyhuansikoko.warrantylogger.databinding.ListItemWarrantyBinding
 
 class WarrantyListAdapter(
-    private val clickListener: (Warranty) -> Unit
+    private val clickListener: (Warranty) -> Unit,
+    private val contextListener: (Int, Boolean) -> Unit
 ) : ListAdapter<Warranty, WarrantyListAdapter.ViewHolder>(DiffCallback) {
+
+    var selectAll: Boolean = false
 
     class ViewHolder(private val binding: ListItemWarrantyBinding) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(warranty: Warranty) {
+        fun bind(warranty: Warranty, contextListener: (Int, Boolean) -> Unit, selectAll: Boolean) {
             binding.apply {
                 tvItemWarrantyName.text = warranty.warrantyName
                 tvItemExpirationDate.text = formatDateMillis(warranty.expirationDate)
                 tvItemStatus.text = warranty.getRemainingTime()
+                cbItemDelete.apply {
+                    isChecked = selectAll
+
+                    setOnClickListener {
+                        contextListener(warranty.id, cbItemDelete.isChecked)
+                    }
+                }
             }
         }
     }
@@ -47,6 +57,7 @@ class WarrantyListAdapter(
         val warranty = getItem(position)
 
         holder.itemView.setOnClickListener { clickListener(warranty) }
-        holder.bind(warranty)
+
+        holder.bind(warranty, contextListener, selectAll)
     }
 }

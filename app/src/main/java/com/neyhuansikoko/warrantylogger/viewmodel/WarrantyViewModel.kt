@@ -24,6 +24,8 @@ class WarrantyViewModel(application: Application): AndroidViewModel(application)
     val allWarranties: LiveData<List<Warranty>> = warrantyDao.getAll().asLiveData()
     var tempImage: File? = null
 
+    val idList: MutableList<Int> = mutableListOf()
+
     fun assignModel(warranty: Warranty) {
         displayModel.value = warranty
         inputModel = warranty.copy()
@@ -68,6 +70,17 @@ class WarrantyViewModel(application: Application): AndroidViewModel(application)
                 withContext(Dispatchers.Main) {
                     inputModel = DEFAULT_MODEL
                 }
+            }
+        }
+    }
+
+    fun deleteSelectedWarranty() {
+        if (idList.isNotEmpty()) {
+            val list: MutableList<Int> = mutableListOf()
+            list.addAll(idList)
+
+            viewModelScope.launch(Dispatchers.IO) {
+                warrantyDao.deleteSelected(list)
             }
         }
     }

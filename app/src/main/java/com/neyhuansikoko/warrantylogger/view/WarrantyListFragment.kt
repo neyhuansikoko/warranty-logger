@@ -46,8 +46,7 @@ class WarrantyListFragment : Fragment() {
             }
 
             val adapter = WarrantyListAdapter {
-                sharedViewModel.displayModel.value = it //Get reference
-                sharedViewModel.inputModel = it.copy() //Get value
+                sharedViewModel.assignModel(it)
                 findNavController().navigate(R.id.action_warrantyListFragment_to_warrantyDetailFragment)
             }
             rvListWarranty.adapter = adapter
@@ -74,8 +73,11 @@ class WarrantyListFragment : Fragment() {
     }
 
     override fun onResume() {
-        sharedViewModel.displayModel.value = DEFAULT_MODEL
-        sharedViewModel.inputModel = DEFAULT_MODEL
+        sharedViewModel.apply {
+            resetModel()
+            clearTempImage()
+        }
+
         super.onResume()
     }
 

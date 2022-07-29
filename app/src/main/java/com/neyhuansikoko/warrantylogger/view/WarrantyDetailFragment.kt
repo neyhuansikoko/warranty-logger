@@ -118,6 +118,11 @@ class WarrantyDetailFragment : Fragment() {
         findNavController().navigate(R.id.action_warrantyDetailFragment_to_warrantyListFragment)
     }
 
+    override fun onResume() {
+        super.onResume()
+        sharedViewModel.clearTempImage()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

@@ -40,7 +40,7 @@ fun Warranty.isValid(): Boolean {
 //Used to delete stored image file
 fun Warranty.deleteImageFile(context: Context) {
     this.image?.let { image ->
-        getImageFile(context.applicationContext, image)?.delete()
+        getImageFile(context, image)?.delete()
         this.image = null
     }
 }

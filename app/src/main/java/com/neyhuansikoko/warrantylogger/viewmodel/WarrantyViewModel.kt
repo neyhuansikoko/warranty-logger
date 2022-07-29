@@ -24,6 +24,16 @@ class WarrantyViewModel(application: Application): AndroidViewModel(application)
     val allWarranties: LiveData<List<Warranty>> = warrantyDao.getAll().asLiveData()
     var tempImage: File? = null
 
+    fun assignModel(warranty: Warranty) {
+        displayModel.value = warranty
+        inputModel = warranty.copy()
+    }
+
+    fun resetModel() {
+        displayModel.value = DEFAULT_MODEL
+        inputModel = DEFAULT_MODEL
+    }
+
     fun insertWarranty() {
         if (!inputModel.isValid()) {
             saveTempImage()?.let { newImage ->
@@ -69,8 +79,14 @@ class WarrantyViewModel(application: Application): AndroidViewModel(application)
             newImage = getImageFileAbs(getApplication(), temp.name)
             temp.copyTo(newImage!!)
             temp.delete()
+            tempImage = null
         }
         return newImage
+    }
+
+    fun clearTempImage() {
+        tempImage = null
+        clearCache(getApplication())
     }
 
     //TODO: Remove

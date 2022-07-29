@@ -12,7 +12,6 @@ import com.google.android.material.divider.MaterialDividerItemDecoration
 import com.neyhuansikoko.warrantylogger.R
 import com.neyhuansikoko.warrantylogger.WarrantyListAdapter
 import com.neyhuansikoko.warrantylogger.databinding.FragmentWarrantyListBinding
-import com.neyhuansikoko.warrantylogger.logPing
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
 
 class WarrantyListFragment : Fragment() {
@@ -55,7 +54,7 @@ class WarrantyListFragment : Fragment() {
         // Called when the user exits the action mode
         override fun onDestroyActionMode(mode: ActionMode) {
             actionMode = null
-            sharedViewModel.idList.clear()
+            sharedViewModel.warrantyList.clear()
             binding.cbListDeleteAll.isChecked = false
             (binding.rvListWarranty.adapter as WarrantyListAdapter).apply {
                 selectAll = false
@@ -66,7 +65,7 @@ class WarrantyListFragment : Fragment() {
 
     private var actionMode: ActionMode? = null
 
-    private val idCount: Int get() = sharedViewModel.idList.size
+    private val idCount: Int get() = sharedViewModel.warrantyList.size
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -97,12 +96,12 @@ class WarrantyListFragment : Fragment() {
                 if (actionMode == null) actionMode = activity?.startActionMode(actionModeCallback)
 
                 if (isChecked) {
-                    sharedViewModel.idList.add(id)
+                    sharedViewModel.warrantyList.add(id)
                 } else {
                     cbListDeleteAll.isChecked = false
                     (rvListWarranty.adapter as WarrantyListAdapter).selectAll = false
 
-                    sharedViewModel.idList.remove(id)
+                    sharedViewModel.warrantyList.remove(id)
 
                     if (idCount == 0) {
                         actionMode?.finish()
@@ -143,8 +142,8 @@ class WarrantyListFragment : Fragment() {
                         selectAll = true
                         sharedViewModel.apply {
                             allWarranties.value?.let { list ->
-                                idList.clear()
-                                idList.addAll(list.map { it.id })
+                                warrantyList.clear()
+                                warrantyList.addAll(list)
                             }
                         }
                         notifyDataSetChanged()

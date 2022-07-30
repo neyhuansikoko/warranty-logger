@@ -22,9 +22,12 @@ class WarrantyViewModel(application: Application): AndroidViewModel(application)
     var inputModel: Warranty = DEFAULT_MODEL
 
     val allWarranties: LiveData<List<Warranty>> = warrantyDao.getAll().asLiveData()
+    val warrantySize: Int get() = allWarranties.value?.size ?: 0
+
     var tempImage: File? = null
 
-    val warrantyList: MutableList<Warranty> = mutableListOf()
+    val deleteList: MutableLiveData<MutableList<Warranty>> = MutableLiveData(mutableListOf())
+    val deleteSize: Int get() = deleteList.value?.size ?: 0
 
     fun assignModel(warranty: Warranty) {
         displayModel.value = warranty
@@ -34,6 +37,31 @@ class WarrantyViewModel(application: Application): AndroidViewModel(application)
     fun resetModel() {
         displayModel.value = DEFAULT_MODEL
         inputModel = DEFAULT_MODEL
+    }
+
+    fun addAllToDelete() {
+        deleteList.value = allWarranties.value?.toMutableList()
+    }
+
+    fun clearDelete() {
+        deleteList.apply {
+            value?.clear()
+            notifyObserver()
+        }
+    }
+
+    fun addDelete(warranty: Warranty) {
+        deleteList.apply {
+            value?.add(warranty)
+            deleteList.notifyObserver()
+        }
+    }
+
+    fun removeDelete(warranty: Warranty) {
+        deleteList.apply {
+            value?.remove(warranty)
+            deleteList.notifyObserver()
+        }
     }
 
     fun insertWarranty() {
@@ -75,14 +103,16 @@ class WarrantyViewModel(application: Application): AndroidViewModel(application)
     }
 
     fun deleteSelectedWarranty() {
-        if (warrantyList.isNotEmpty()) {
-            warrantyList.forEach {
-                it.deleteImageFile(getApplication())
-            }
-            val list: List<Int> = warrantyList.map { it.id }
+        deleteList.value?.let { deleteList ->
+            if (deleteList.isNotEmpty()) {
+                deleteList.forEach {
+                    it.deleteImageFile(getApplication())
+                }
+                val list: List<Int> = deleteList.map { it.id }
 
-            viewModelScope.launch(Dispatchers.IO) {
-                warrantyDao.deleteSelected(list)
+                viewModelScope.launch(Dispatchers.IO) {
+                    warrantyDao.deleteSelected(list)
+                }
             }
         }
     }
@@ -117,4 +147,8 @@ class WarrantyViewModel(application: Application): AndroidViewModel(application)
         super.onCleared()
         clearCache(getApplication())
     }
+}
+
+fun <T> MutableLiveData<T>.notifyObserver() {
+    this.value = this.value
 }

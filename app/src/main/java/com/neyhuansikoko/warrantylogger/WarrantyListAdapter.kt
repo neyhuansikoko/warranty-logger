@@ -2,6 +2,7 @@ package com.neyhuansikoko.warrantylogger
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.CheckBox
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -18,18 +19,11 @@ class WarrantyListAdapter(
 
     class ViewHolder(private val binding: ListItemWarrantyBinding) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(warranty: Warranty, contextListener: (Warranty, Boolean) -> Unit, selectAll: Boolean) {
+        fun bind(warranty: Warranty) {
             binding.apply {
                 tvItemWarrantyName.text = warranty.warrantyName
                 tvItemExpirationDate.text = formatDateMillis(warranty.expirationDate)
                 tvItemStatus.text = warranty.getRemainingTime()
-                cbItemDelete.apply {
-                    isChecked = selectAll
-
-                    setOnClickListener {
-                        contextListener(warranty, cbItemDelete.isChecked)
-                    }
-                }
             }
         }
     }
@@ -57,7 +51,23 @@ class WarrantyListAdapter(
         val warranty = getItem(position)
 
         holder.itemView.setOnClickListener { clickListener(warranty) }
+        holder.itemView.findViewById<CheckBox>(R.id.cb_item_delete).apply {
+            isChecked = selectAll
+            setOnClickListener {
+                contextListener(warranty, isChecked)
+            }
+        }
 
-        holder.bind(warranty, contextListener, selectAll)
+        holder.bind(warranty)
+    }
+
+    fun setSelectAll() {
+        selectAll = true
+        notifyDataSetChanged()
+    }
+
+    fun setUnselectAll() {
+        selectAll = false
+        notifyDataSetChanged()
     }
 }

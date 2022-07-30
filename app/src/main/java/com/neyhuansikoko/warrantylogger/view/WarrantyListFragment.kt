@@ -11,8 +11,10 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.divider.MaterialDividerItemDecoration
 import com.neyhuansikoko.warrantylogger.R
 import com.neyhuansikoko.warrantylogger.WarrantyListAdapter
+import com.neyhuansikoko.warrantylogger.database.Warranty
 import com.neyhuansikoko.warrantylogger.databinding.FragmentWarrantyListBinding
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
+import com.neyhuansikoko.warrantylogger.viewmodel.notifyObserver
 
 class WarrantyListFragment : Fragment() {
 
@@ -22,7 +24,24 @@ class WarrantyListFragment : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
+    private val adapter by lazy { binding.rvListWarranty.adapter as WarrantyListAdapter }
+
     private val sharedViewModel: WarrantyViewModel by activityViewModels()
+
+    private val clickListener: (Warranty) -> Unit = {
+        navigateToDetail(it)
+    }
+
+    private val contextListener: (Warranty, Boolean) -> Unit = { warranty, isChecked ->
+        if (isChecked) {
+            sharedViewModel.addDelete(warranty)
+        } else {
+            binding.cbListDeleteAll.isChecked = false
+            adapter.selectAll = false
+
+            sharedViewModel.removeDelete(warranty)
+        }
+    }
 
     private val actionModeCallback: ActionMode.Callback = object : ActionMode.Callback {
         // Called when the action mode is created; startActionMode() was called
@@ -36,7 +55,8 @@ class WarrantyListFragment : Fragment() {
         // Called each time the action mode is shown. Always called after onCreateActionMode, but
         // may be called multiple times if the mode is invalidated.
         override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
-
+            val size = sharedViewModel.deleteSize
+            actionMode?.title = "Selected $size ${if (size > 1) "items" else "item"}"
             return true
         }
 
@@ -54,18 +74,11 @@ class WarrantyListFragment : Fragment() {
         // Called when the user exits the action mode
         override fun onDestroyActionMode(mode: ActionMode) {
             actionMode = null
-            sharedViewModel.warrantyList.clear()
-            binding.cbListDeleteAll.isChecked = false
-            (binding.rvListWarranty.adapter as WarrantyListAdapter).apply {
-                selectAll = false
-                notifyDataSetChanged()
-            }
+            sharedViewModel.clearDelete()
         }
     }
 
     private var actionMode: ActionMode? = null
-
-    private val idCount: Int get() = sharedViewModel.warrantyList.size
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -81,35 +94,25 @@ class WarrantyListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.apply {
-
             fabList.setOnClickListener {
                 val action = WarrantyListFragmentDirections.actionWarrantyListFragmentToAddWarrantyFragment(title = getString(R.string.add_warranty_title_text))
                 findNavController().navigate(action)
             }
 
-            val adapter = WarrantyListAdapter({
-                if (actionMode == null) {
-                    sharedViewModel.assignModel(it)
-                    findNavController().navigate(R.id.action_warrantyListFragment_to_warrantyDetailFragment)
-                }
-            },{ id, isChecked ->
-                if (actionMode == null) actionMode = activity?.startActionMode(actionModeCallback)
+            val adapter = WarrantyListAdapter(clickListener, contextListener)
 
-                if (isChecked) {
-                    sharedViewModel.warrantyList.add(id)
-                } else {
-                    cbListDeleteAll.isChecked = false
-                    (rvListWarranty.adapter as WarrantyListAdapter).selectAll = false
-
-                    sharedViewModel.warrantyList.remove(id)
-
-                    if (idCount == 0) {
+            cbListDeleteAll.setOnClickListener {
+                adapter.apply {
+                    if (selectAll) {
+                        adapter.setUnselectAll()
                         actionMode?.finish()
+                    } else {
+                        setSelectAll()
+                        sharedViewModel.addAllToDelete()
                     }
                 }
+            }
 
-                actionMode?.title = "Selected $idCount ${if (idCount > 1) "items" else "item"}"
-            })
             rvListWarranty.apply {
                 this.adapter = adapter
                 this.addItemDecoration(MaterialDividerItemDecoration(requireContext(), MaterialDividerItemDecoration.VERTICAL))
@@ -125,37 +128,43 @@ class WarrantyListFragment : Fragment() {
                 })
             }
 
-            sharedViewModel.allWarranties.observe(viewLifecycleOwner) {
-                adapter.submitList(it)
-                progressList.visibility = View.GONE
-                cbListDeleteAll.visibility = if (it.isNotEmpty()) View.VISIBLE else View.INVISIBLE
-                tvListNoData.visibility = if (it.isEmpty()) View.VISIBLE else View.INVISIBLE
-            }
-
-            cbListDeleteAll.setOnClickListener {
-                if (actionMode == null) actionMode = activity?.startActionMode(actionModeCallback)
-
-                adapter.apply {
-                    if (selectAll) {
-                        actionMode?.finish()
-                    } else {
-                        selectAll = true
-                        sharedViewModel.apply {
-                            allWarranties.value?.let { list ->
-                                warrantyList.clear()
-                                warrantyList.addAll(list)
-                            }
-                        }
-                        notifyDataSetChanged()
-                    }
-
+            sharedViewModel.apply {
+                allWarranties.observe(viewLifecycleOwner) {
+                    adapter.submitList(it)
+                    progressList.visibility = View.GONE
+                    cbListDeleteAll.visibility = if (it.isNotEmpty()) View.VISIBLE else View.INVISIBLE
+                    tvListNoData.visibility = if (it.isEmpty()) View.VISIBLE else View.INVISIBLE
                 }
 
-                actionMode?.title = "Selected $idCount ${if (idCount > 1) "items" else "item"}"
+                deleteList.observe(viewLifecycleOwner) {
+                    if (it.isEmpty()) {
+                        cbListDeleteAll.isChecked = false
+                        actionMode?.finish()
+                        binding.fabList.show()
+                    }
+                    else if (actionMode == null) {
+                        binding.fabList.hide()
+                        actionMode = activity?.startActionMode(actionModeCallback)
+                    }
+
+                    if (deleteSize == warrantySize && warrantySize > 0) {
+                        cbListDeleteAll.isChecked = true
+                        adapter.selectAll = true
+                    }
+
+                    actionMode?.invalidate()
+                }
             }
 
             //TODO: Remove
 //            sharedViewModel.testInsertTwentyWarranty()
+        }
+    }
+
+    private fun navigateToDetail(warranty: Warranty) {
+        if (actionMode == null) {
+            sharedViewModel.assignModel(warranty)
+            findNavController().navigate(R.id.action_warrantyListFragment_to_warrantyDetailFragment)
         }
     }
 
@@ -183,6 +192,7 @@ class WarrantyListFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        sharedViewModel.clearDelete()
         _binding = null
     }
 }

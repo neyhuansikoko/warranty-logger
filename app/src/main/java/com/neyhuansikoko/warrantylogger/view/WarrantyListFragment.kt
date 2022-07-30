@@ -252,19 +252,22 @@ class WarrantyListFragment : Fragment() {
             .show()
     }
 
+    override fun onPause() {
+        super.onPause()
+        resetOptionMenu()
+    }
+
     override fun onResume() {
         sharedViewModel.apply {
             resetModel()
             clearTempImage()
         }
-
         super.onResume()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         sharedViewModel.clearDelete()
-        resetOptionMenu()
         _binding = null
     }
 }

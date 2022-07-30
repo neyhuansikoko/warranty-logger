@@ -4,7 +4,12 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
+import android.view.View
+import android.view.inputmethod.InputMethodManager
+import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.content.getSystemService
 import androidx.exifinterface.media.ExifInterface
+import androidx.lifecycle.MutableLiveData
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.neyhuansikoko.warrantylogger.database.Warranty
 import java.io.File
@@ -74,4 +79,13 @@ fun File.compressImage(): File {
     }
 
     return this
+}
+
+fun <T> MutableLiveData<T>.notifyObserver() {
+    this.value = this.value
+}
+
+fun closeSoftKeyboard(view: View, context: Context) {
+    val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
 }

@@ -34,6 +34,20 @@
             app:layout_constraintTop_toTopOf="@+id/tv_list_warranty_name_label" />
 
         <TextView
+            android:id="@+id/tv_list_warranty_name_label"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-black"
+            android:text="@string/warranty_name_shortened_label_text"
+            android:textColor="?attr/colorOnPrimary"
+            app:layout_constraintBottom_toBottomOf="@+id/tv_list_expiration_date_label"
+            app:layout_constraintEnd_toStartOf="@+id/tv_list_expiration_date_label"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintHorizontal_weight="1.5"
+            app:layout_constraintStart_toEndOf="@+id/cb_list_delete_all"
+            app:layout_constraintTop_toTopOf="@+id/tv_list_expiration_date_label" />
+
+        <TextView
             android:id="@+id/tv_list_expiration_date_label"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -47,20 +61,6 @@
             app:layout_constraintHorizontal_weight="1"
             app:layout_constraintStart_toEndOf="@+id/tv_list_warranty_name_label"
             app:layout_constraintTop_toTopOf="@+id/tv_list_remaining_time_label" />
-
-        <TextView
-            android:id="@+id/tv_list_warranty_name_label"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-black"
-            android:text="@string/warranty_name_shortened_label_text"
-            android:textColor="?attr/colorOnPrimary"
-            app:layout_constraintBottom_toBottomOf="@+id/tv_list_expiration_date_label"
-            app:layout_constraintEnd_toStartOf="@+id/tv_list_expiration_date_label"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintHorizontal_weight="2"
-            app:layout_constraintStart_toEndOf="@+id/cb_list_delete_all"
-            app:layout_constraintTop_toTopOf="@+id/tv_list_expiration_date_label" />
 
         <TextView
             android:id="@+id/tv_list_remaining_time_label"

@@ -3,18 +3,19 @@ package com.neyhuansikoko.warrantylogger.view
 import android.os.Bundle
 import android.view.*
 import android.view.ActionMode
+import androidx.appcompat.widget.SearchView
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.divider.MaterialDividerItemDecoration
-import com.neyhuansikoko.warrantylogger.R
-import com.neyhuansikoko.warrantylogger.WarrantyListAdapter
+import com.neyhuansikoko.warrantylogger.*
 import com.neyhuansikoko.warrantylogger.database.Warranty
 import com.neyhuansikoko.warrantylogger.databinding.FragmentWarrantyListBinding
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
-import com.neyhuansikoko.warrantylogger.viewmodel.notifyObserver
 
 class WarrantyListFragment : Fragment() {
 
@@ -75,6 +76,7 @@ class WarrantyListFragment : Fragment() {
         override fun onDestroyActionMode(mode: ActionMode) {
             actionMode = null
             sharedViewModel.clearDelete()
+            resetOptionMenu()
         }
     }
 
@@ -95,8 +97,7 @@ class WarrantyListFragment : Fragment() {
 
         binding.apply {
             fabList.setOnClickListener {
-                val action = WarrantyListFragmentDirections.actionWarrantyListFragmentToAddWarrantyFragment(title = getString(R.string.add_warranty_title_text))
-                findNavController().navigate(action)
+                navigateToAddWarranty()
             }
 
             val adapter = WarrantyListAdapter(clickListener, contextListener)
@@ -129,7 +130,7 @@ class WarrantyListFragment : Fragment() {
             }
 
             sharedViewModel.apply {
-                allWarranties.observe(viewLifecycleOwner) {
+                mediatorWarranties.observe(viewLifecycleOwner) {
                     adapter.submitList(it)
                     progressList.visibility = View.GONE
                     cbListDeleteAll.visibility = if (it.isNotEmpty()) View.VISIBLE else View.INVISIBLE
@@ -139,6 +140,7 @@ class WarrantyListFragment : Fragment() {
                 deleteList.observe(viewLifecycleOwner) {
                     if (it.isEmpty()) {
                         cbListDeleteAll.isChecked = false
+                        adapter.setUnselectAll()
                         actionMode?.finish()
                         binding.fabList.show()
                     }
@@ -147,7 +149,7 @@ class WarrantyListFragment : Fragment() {
                         actionMode = activity?.startActionMode(actionModeCallback)
                     }
 
-                    if (deleteSize == warrantySize && warrantySize > 0) {
+                    if (deleteSize == mediatorSize && mediatorSize > 0) {
                         cbListDeleteAll.isChecked = true
                         adapter.selectAll = true
                     }
@@ -159,6 +161,75 @@ class WarrantyListFragment : Fragment() {
             //TODO: Remove
 //            sharedViewModel.testInsertTwentyWarranty()
         }
+
+        setupOptionMenu()
+    }
+
+    private fun setupOptionMenu() {
+        //Create option menu
+        requireActivity().addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menu.clear()
+                menuInflater.inflate(R.menu.menu_list, menu)
+
+                val searchItem = menu.findItem(R.id.menu_item_search)
+                val clearSearchItem = menu.findItem(R.id.menu_item_clear_search)
+
+                val searchView = SearchView((requireActivity() as MainActivity).supportActionBar?.themedContext ?: requireActivity())
+                searchItem.actionView = searchView
+
+                searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                    override fun onQueryTextSubmit(query: String?): Boolean {
+                        closeSoftKeyboard(binding.root, requireActivity())
+                        return true
+                    }
+
+                    override fun onQueryTextChange(newText: String?): Boolean {
+                        (requireActivity() as MainActivity).supportActionBar?.setTitle("") ?: requireActivity()
+                        sharedViewModel.apply {
+                            filterWarranties.value = getFilteredWarranties(newText)
+                        }
+                        return true
+                    }
+
+                })
+
+                searchView.setOnSearchClickListener {
+                    (requireActivity() as MainActivity).supportActionBar?.setTitle("") ?: requireActivity()
+                    clearSearchItem.isVisible = true
+                }
+
+                searchView.setOnCloseListener {
+                    resetOptionMenu()
+                    true
+                }
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                if (menuItem.itemId == R.id.menu_item_clear_search) {
+                    resetOptionMenu()
+                    return true
+                }
+                return false
+            }
+
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    fun resetOptionMenu() {
+        (requireActivity() as MainActivity).apply {
+            supportActionBar?.setTitle(getString(R.string.app_name)) ?: requireActivity()
+            invalidateOptionsMenu()
+        }
+        sharedViewModel.apply { filterWarranties.value = allWarranties.value }
+        closeSoftKeyboard(binding.root, requireActivity())
+    }
+
+    private fun navigateToAddWarranty() {
+        val action = WarrantyListFragmentDirections.actionWarrantyListFragmentToAddWarrantyFragment(
+            title = getString(R.string.add_warranty_title_text)
+        )
+        findNavController().navigate(action)
     }
 
     private fun navigateToDetail(warranty: Warranty) {
@@ -193,6 +264,7 @@ class WarrantyListFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         sharedViewModel.clearDelete()
+        resetOptionMenu()
         _binding = null
     }
 }

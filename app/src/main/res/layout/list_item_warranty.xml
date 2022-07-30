@@ -29,7 +29,7 @@
         app:layout_constraintBottom_toBottomOf="@+id/tv_item_expiration_date"
         app:layout_constraintEnd_toStartOf="@+id/tv_item_expiration_date"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintHorizontal_weight="2"
+        app:layout_constraintHorizontal_weight="1.5"
         app:layout_constraintStart_toEndOf="@+id/cb_item_delete"
         app:layout_constraintTop_toTopOf="@+id/tv_item_expiration_date"
         tools:text="Refrigerator Warranty" />

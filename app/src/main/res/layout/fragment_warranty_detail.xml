@@ -88,7 +88,7 @@
             android:layout_marginTop="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_detail_remaining_time" />
+            app:layout_constraintTop_toBottomOf="@+id/tv_detail_remaining_time_label" />
 
         <ImageView
             android:id="@+id/img_detail_ic_image"
@@ -125,11 +125,13 @@
             android:id="@+id/img_detail_image"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:adjustViewBounds="true"
             android:importantForAccessibility="no"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/tv_detail_image_name"
-            app:layout_constraintTop_toBottomOf="@+id/tv_detail_image_name"
+            app:layout_constraintStart_toStartOf="@+id/tv_detail_image_label"
+            app:layout_constraintTop_toBottomOf="@+id/tv_detail_image_label"
             tools:src="@tools:sample/backgrounds/scenic" />
 
         <TextView
@@ -146,9 +148,11 @@
             android:id="@+id/tv_detail_remaining_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            app:layout_constraintStart_toStartOf="@+id/tv_detail_remaining_time_label"
-            app:layout_constraintTop_toBottomOf="@+id/tv_detail_remaining_time_label"
+            android:layout_marginStart="8dp"
+            app:layout_constraintBottom_toBottomOf="@+id/tv_detail_remaining_time_label"
+            app:layout_constraintStart_toEndOf="@+id/tv_detail_remaining_time_label"
+            app:layout_constraintTop_toTopOf="@+id/tv_detail_remaining_time_label"
+            app:layout_constraintVertical_bias="0.0"
             tools:text="expired" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

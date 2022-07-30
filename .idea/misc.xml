@@ -5,6 +5,7 @@
       <map>
         <entry key="..\:/Users/neyhu/AndroidStudioProjects/WarrantyLogger/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.1955" />
         <entry key="..\:/Users/neyhu/AndroidStudioProjects/WarrantyLogger/app/src/main/res/drawable/ic_add_warranty.xml" value="0.1955" />
+        <entry key="..\:/Users/neyhu/AndroidStudioProjects/WarrantyLogger/app/src/main/res/drawable/ic_arrow_back.xml" value="0.1955" />
         <entry key="..\:/Users/neyhu/AndroidStudioProjects/WarrantyLogger/app/src/main/res/drawable/ic_camera_click.xml" value="0.1955" />
         <entry key="..\:/Users/neyhu/AndroidStudioProjects/WarrantyLogger/app/src/main/res/drawable/ic_date_picker.xml" value="0.1955" />
         <entry key="..\:/Users/neyhu/AndroidStudioProjects/WarrantyLogger/app/src/main/res/drawable/ic_delete.xml" value="0.1955" />
@@ -12,13 +13,14 @@
         <entry key="..\:/Users/neyhu/AndroidStudioProjects/WarrantyLogger/app/src/main/res/drawable/ic_image.xml" value="0.1955" />
         <entry key="..\:/Users/neyhu/AndroidStudioProjects/WarrantyLogger/app/src/main/res/drawable/ic_launcher_background.xml" value="0.1955" />
         <entry key="..\:/Users/neyhu/AndroidStudioProjects/WarrantyLogger/app/src/main/res/drawable/ic_name.xml" value="0.1955" />
+        <entry key="..\:/Users/neyhu/AndroidStudioProjects/WarrantyLogger/app/src/main/res/drawable/ic_search.xml" value="0.1955" />
         <entry key="..\:/Users/neyhu/AndroidStudioProjects/WarrantyLogger/app/src/main/res/layout/activity_main.xml" value="0.264" />
         <entry key="..\:/Users/neyhu/AndroidStudioProjects/WarrantyLogger/app/src/main/res/layout/content_main.xml" value="0.16983695652173914" />
         <entry key="..\:/Users/neyhu/AndroidStudioProjects/WarrantyLogger/app/src/main/res/layout/fragment_add_warranty.xml" value="0.264" />
         <entry key="..\:/Users/neyhu/AndroidStudioProjects/WarrantyLogger/app/src/main/res/layout/fragment_camera.xml" value="0.264" />
         <entry key="..\:/Users/neyhu/AndroidStudioProjects/WarrantyLogger/app/src/main/res/layout/fragment_first.xml" value="0.2" />
         <entry key="..\:/Users/neyhu/AndroidStudioProjects/WarrantyLogger/app/src/main/res/layout/fragment_second.xml" value="0.2" />
-        <entry key="..\:/Users/neyhu/AndroidStudioProjects/WarrantyLogger/app/src/main/res/layout/fragment_warranty_detail.xml" value="0.264" />
+        <entry key="..\:/Users/neyhu/AndroidStudioProjects/WarrantyLogger/app/src/main/res/layout/fragment_warranty_detail.xml" value="0.4" />
         <entry key="..\:/Users/neyhu/AndroidStudioProjects/WarrantyLogger/app/src/main/res/layout/fragment_warranty_list.xml" value="0.264" />
         <entry key="..\:/Users/neyhu/AndroidStudioProjects/WarrantyLogger/app/src/main/res/layout/list_item_warranty.xml" value="0.4" />
         <entry key="..\:/Users/neyhu/AndroidStudioProjects/WarrantyLogger/app/src/main/res/menu/context_menu_list.xml" value="0.25416666666666665" />

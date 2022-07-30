@@ -2,13 +2,10 @@ package com.neyhuansikoko.warrantylogger.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.*
-import com.neyhuansikoko.warrantylogger.DEFAULT_MODEL
-import com.neyhuansikoko.warrantylogger.WarrantyLoggerApplication
-import com.neyhuansikoko.warrantylogger.clearCache
+import com.neyhuansikoko.warrantylogger.*
 import com.neyhuansikoko.warrantylogger.database.Warranty
 import com.neyhuansikoko.warrantylogger.database.deleteImageFile
 import com.neyhuansikoko.warrantylogger.database.isValid
-import com.neyhuansikoko.warrantylogger.getImageFileAbs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -22,12 +19,27 @@ class WarrantyViewModel(application: Application): AndroidViewModel(application)
     var inputModel: Warranty = DEFAULT_MODEL
 
     val allWarranties: LiveData<List<Warranty>> = warrantyDao.getAll().asLiveData()
-    val warrantySize: Int get() = allWarranties.value?.size ?: 0
+    val filterWarranties: MutableLiveData<List<Warranty>> = MutableLiveData()
+    val mediatorWarranties: MediatorLiveData<List<Warranty>> = MediatorLiveData()
+    val mediatorSize: Int get() = mediatorWarranties.value?.size ?: 0
 
     var tempImage: File? = null
 
     val deleteList: MutableLiveData<MutableList<Warranty>> = MutableLiveData(mutableListOf())
     val deleteSize: Int get() = deleteList.value?.size ?: 0
+
+    init {
+        mediatorWarranties.addSource(allWarranties) {
+            mediatorWarranties.value = it
+        }
+        mediatorWarranties.addSource(filterWarranties) {
+            mediatorWarranties.value = it
+        }
+    }
+
+    fun getFilteredWarranties(query: String?): List<Warranty> {
+        return allWarranties.value?.filter { it.warrantyName.contains(query ?: "", true) } ?: listOf()
+    }
 
     fun assignModel(warranty: Warranty) {
         displayModel.value = warranty
@@ -147,8 +159,4 @@ class WarrantyViewModel(application: Application): AndroidViewModel(application)
         super.onCleared()
         clearCache(getApplication())
     }
-}
-
-fun <T> MutableLiveData<T>.notifyObserver() {
-    this.value = this.value
 }

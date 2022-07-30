@@ -91,12 +91,14 @@ class AddWarrantyFragment : Fragment() {
 
             //Check if tempImage exist and load it, if not then try to load from modelWarranty
             sharedViewModel.tempImage?.let {
+                tvAddImageName.visibility = View.GONE
                 imgAddImage.setImageURI(it.toUri())
-                tvAddImageName.text = it.name
+                imgAddImage.visibility = View.VISIBLE
             } ?: model.image?.let { image ->
                 getImageFile(requireActivity(), image)?.let {
+                    tvAddImageName.visibility = View.GONE
                     imgAddImage.setImageURI(it.toUri())
-                    tvAddImageName.text = it.name
+                    imgAddImage.visibility = View.VISIBLE
                 }
             }
 

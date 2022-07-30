@@ -62,8 +62,9 @@ class WarrantyDetailFragment : Fragment() {
             //Set image and image name, if it exist
             warranty.image?.let { image ->
                 getImageFile(requireActivity(), image)?.let {
+                    tvDetailImageName.visibility = View.GONE
                     imgDetailImage.setImageURI(it.toUri())
-                    tvDetailImageName.text = it.name
+                    imgDetailImage.visibility = View.VISIBLE
                 }
             }
         }

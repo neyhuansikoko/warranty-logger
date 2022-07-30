@@ -23,8 +23,10 @@
     <string name="cancel_text">Cancel</string>
     <string name="no_image_set_text">No image set</string>
     <string name="image_of_warranty_text">Image of warranty</string>
-    <string name="remaining_time_label_text">REMAINING</string>
-    <string name="remaining_time_long_label_text">Remaining Time</string>
+    <string name="remaining_time_label_text">ACTIVE</string>
+    <string name="remaining_time_long_label_text">Expire in:</string>
     <string name="empty" />
     <string name="no_data_text">Empty</string>
+    <string name="search_text">Search</string>
+    <string name="clear_search_text">Clear Search</string>
 </resources>

@@ -8,3 +8,5 @@ const val YEAR_MILLIS: Long = 31557600000
 
 const val TEMP_IMAGE_SUFFIX: String = ".jpg"
 const val COMPRESSION_QUALITY: Int = 70
+
+const val NOTIFICATION_ID: Int = 37

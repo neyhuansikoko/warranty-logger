@@ -9,14 +9,17 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import com.neyhuansikoko.warrantylogger.R
 import com.neyhuansikoko.warrantylogger.database.Warranty
 import com.neyhuansikoko.warrantylogger.database.getRemainingTime
 import com.neyhuansikoko.warrantylogger.database.isValid
 import com.neyhuansikoko.warrantylogger.databinding.FragmentWarrantyDetailBinding
 import com.neyhuansikoko.warrantylogger.formatDateMillis
+import com.neyhuansikoko.warrantylogger.getDaysToDate
 import com.neyhuansikoko.warrantylogger.getImageFile
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
+import java.util.concurrent.TimeUnit
 
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
@@ -65,6 +68,26 @@ class WarrantyDetailFragment : Fragment() {
                     tvDetailImageName.visibility = View.GONE
                     imgDetailImage.setImageURI(it.toUri())
                     imgDetailImage.visibility = View.VISIBLE
+                }
+            }
+
+            btnDetailWarnExpiration.setOnClickListener {
+                val daysToDate = getDaysToDate(warranty.expirationDate) - 2
+
+                if (daysToDate > 0) {
+                    sharedViewModel.scheduleReminder(warranty)
+
+                    Snackbar.make(
+                        btnDetailWarnExpiration,
+                        "Reminder has been set to ${getDaysToDate(warranty.expirationDate) - 2} days from now",
+                        Snackbar.LENGTH_SHORT
+                    ).show()
+                } else {
+                    Snackbar.make(
+                        btnDetailWarnExpiration,
+                        "Your warranty will expired in less than 2 days",
+                        Snackbar.LENGTH_SHORT
+                    ).show()
                 }
             }
         }

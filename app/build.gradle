@@ -65,4 +65,7 @@ dependencies {
 
     //For ExifInterface
     implementation 'androidx.exifinterface:exifinterface:1.3.3'
+
+    //WorkManager
+    implementation("androidx.work:work-runtime-ktx:$work_version")
 }

@@ -2,6 +2,10 @@ package com.neyhuansikoko.warrantylogger.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.*
+import androidx.work.Data
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.neyhuansikoko.warrantylogger.*
 import com.neyhuansikoko.warrantylogger.database.Warranty
 import com.neyhuansikoko.warrantylogger.database.deleteImageFile
@@ -10,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.util.concurrent.TimeUnit
 
 class WarrantyViewModel(application: Application): AndroidViewModel(application) {
 
@@ -30,6 +35,8 @@ class WarrantyViewModel(application: Application): AndroidViewModel(application)
 
     val deleteList: MutableLiveData<MutableList<Warranty>> = MutableLiveData(mutableListOf())
     val deleteSize: Int get() = deleteList.value?.size ?: 0
+
+    private val workManager = WorkManager.getInstance(getApplication())
 
     init {
         mediatorWarranties.addSource(allWarranties) {
@@ -163,6 +170,26 @@ class WarrantyViewModel(application: Application): AndroidViewModel(application)
     fun clearTempImage() {
         tempImage = null
         clearCache(getApplication())
+    }
+
+    internal fun scheduleReminder(warranty: Warranty) {
+        val data = Data.Builder().putString(ExpirationNotifierWorker.nameKey, warranty.warrantyName).build()
+
+        val duration = (getDaysToDate(warranty.expirationDate) - 2).takeIf { it >= 2 } ?: 0
+
+        val request = OneTimeWorkRequestBuilder<ExpirationNotifierWorker>()
+            .setInitialDelay(duration, TimeUnit.DAYS)
+            .setInputData(data)
+            .build()
+
+        log(duration.toString())
+
+        //Enqueue unique work with warranty's id as unique identifier
+        workManager.enqueueUniqueWork(
+            warranty.id.toString(),
+            ExistingWorkPolicy.REPLACE,
+            request
+        )
     }
 
     override fun onCleared() {

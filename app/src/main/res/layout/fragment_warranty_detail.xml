@@ -88,7 +88,7 @@
             android:layout_marginTop="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_detail_remaining_time_label" />
+            app:layout_constraintTop_toBottomOf="@+id/btn_detail_warn_expiration" />
 
         <ImageView
             android:id="@+id/img_detail_ic_image"
@@ -154,6 +154,16 @@
             app:layout_constraintTop_toTopOf="@+id/tv_detail_remaining_time_label"
             app:layout_constraintVertical_bias="0.0"
             tools:text="expired" />
+
+        <Button
+            android:id="@+id/btn_detail_warn_expiration"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/warn_me_text"
+            app:layout_constraintStart_toStartOf="@+id/tv_detail_remaining_time_label"
+            app:layout_constraintTop_toBottomOf="@+id/tv_detail_remaining_time_label" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

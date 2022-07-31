@@ -16,6 +16,8 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.math.ceil
 
 fun log(message: String) {
     Log.d("Test", message)
@@ -88,4 +90,11 @@ fun <T> MutableLiveData<T>.notifyObserver() {
 fun closeSoftKeyboard(view: View, context: Context) {
     val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
     inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+}
+
+fun getDaysToDate(date: Long): Long {
+    val currentDate = Calendar.getInstance().timeInMillis.floorDiv(DAY_MILLIS)
+    val expirationDate = ceil(date.toDouble() / DAY_MILLIS).toLong()
+
+    return expirationDate - currentDate
 }

@@ -18,7 +18,7 @@ data class Warranty(
 
 fun Warranty.getRemainingTime(): String {
     val currentDay = Calendar.getInstance().timeInMillis
-    val remainingDays = (ceil(expirationDate.toDouble() / DAY_MILLIS) - ceil(currentDay.toDouble() / DAY_MILLIS)).toInt() + 1
+    val remainingDays = (ceil(expirationDate.toDouble() / DAY_MILLIS) - currentDay.floorDiv(DAY_MILLIS)).toInt()
     val remainingMonths = (ceil(expirationDate.toDouble() / MONTH_MILLIS) - ceil(currentDay.toDouble() / MONTH_MILLIS)).toInt()
     val remainingYear = (ceil(expirationDate.toDouble() / YEAR_MILLIS) - ceil(currentDay.toDouble() / YEAR_MILLIS)).toInt()
 

@@ -13,6 +13,9 @@ import java.io.File
 
 class WarrantyViewModel(application: Application): AndroidViewModel(application) {
 
+    enum class WarrantyAttribute { NAME, DATE }
+    enum class WarrantySort { ASC, DSC }
+
     private val warrantyDao = getApplication<WarrantyLoggerApplication>().database.warrantyDao()
 
     val displayModel: MutableLiveData<Warranty> = MutableLiveData(DEFAULT_MODEL)
@@ -34,6 +37,22 @@ class WarrantyViewModel(application: Application): AndroidViewModel(application)
         }
         mediatorWarranties.addSource(filterWarranties) {
             mediatorWarranties.value = it
+        }
+    }
+
+    fun getSortedWarranties(list: List<Warranty>, attribute: WarrantyAttribute, sort: WarrantySort): List<Warranty> {
+        return if (attribute == WarrantyAttribute.NAME) {
+            if (sort == WarrantySort.ASC) {
+                list.sortedBy { it.warrantyName }
+            } else {
+                list.sortedByDescending { it.warrantyName }
+            }
+        } else  {
+            if (sort == WarrantySort.ASC) {
+                list.sortedBy { it.expirationDate }
+            } else {
+                list.sortedByDescending { it.expirationDate }
+            }
         }
     }
 
@@ -145,15 +164,6 @@ class WarrantyViewModel(application: Application): AndroidViewModel(application)
         tempImage = null
         clearCache(getApplication())
     }
-
-    //TODO: Remove
-//    fun testInsertTwentyWarranty() {
-//        for (i in 1..20) {
-//            val date = Calendar.getInstance()
-//            date.add(Calendar.MONTH, i)
-//            addNewWarranty("TestObject #$i", date.timeInMillis, null)
-//        }
-//    }
 
     override fun onCleared() {
         super.onCleared()

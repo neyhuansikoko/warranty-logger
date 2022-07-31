@@ -76,6 +76,7 @@ class WarrantyListFragment : Fragment() {
         override fun onDestroyActionMode(mode: ActionMode) {
             actionMode = null
             sharedViewModel.clearDelete()
+            resetOrderDisplay()
             resetOptionMenu()
         }
     }
@@ -137,6 +138,42 @@ class WarrantyListFragment : Fragment() {
                     tvListNoData.visibility = if (it.isEmpty()) View.VISIBLE else View.INVISIBLE
                 }
 
+                tvListWarrantyNameLabel.setOnClickListener {
+                    val attribute = WarrantyViewModel.WarrantyAttribute.NAME
+                    val sort: WarrantyViewModel.WarrantySort = if (tvListWarrantyNameLabel.text.equals(getString(R.string.warranty_name_sort_dsc_shortened_label_text))) {
+                        tvListWarrantyNameLabel.text = getString(R.string.warranty_name_sort_asc_shortened_label_text)
+                        tvListExpirationDateLabel.text = getString(R.string.expiration_date_shortened_label_text)
+                        WarrantyViewModel.WarrantySort.ASC
+                    } else {
+                        tvListWarrantyNameLabel.text = getString(R.string.warranty_name_sort_dsc_shortened_label_text)
+                        tvListExpirationDateLabel.text = getString(R.string.expiration_date_shortened_label_text)
+                        WarrantyViewModel.WarrantySort.DSC
+                    }
+
+                    mediatorWarranties.value?.let {
+                        filterWarranties.value = getSortedWarranties(it, attribute, sort).toMutableList()
+                    }
+                }
+
+                tvListExpirationDateLabel.setOnClickListener {
+                    val attribute = WarrantyViewModel.WarrantyAttribute.DATE
+                    val sort: WarrantyViewModel.WarrantySort = if (tvListExpirationDateLabel.text.equals(getString(R.string.expiration_date_sort_dsc_shortened_label_text))) {
+                        tvListExpirationDateLabel.text = getString(R.string.expiration_date_sort_asc_shortened_label_text)
+                        tvListWarrantyNameLabel.text = getString(R.string.warranty_name_shortened_label_text)
+                        WarrantyViewModel.WarrantySort.ASC
+                    } else {
+                        tvListExpirationDateLabel.text = getString(R.string.expiration_date_sort_dsc_shortened_label_text)
+                        tvListWarrantyNameLabel.text = getString(R.string.warranty_name_shortened_label_text)
+                        WarrantyViewModel.WarrantySort.DSC
+                    }
+
+                    mediatorWarranties.value?.let {
+                        filterWarranties.value = getSortedWarranties(it, attribute, sort).toMutableList()
+                    }
+                }
+
+
+
                 deleteList.observe(viewLifecycleOwner) {
                     if (it.isEmpty()) {
                         cbListDeleteAll.isChecked = false
@@ -157,9 +194,6 @@ class WarrantyListFragment : Fragment() {
                     actionMode?.invalidate()
                 }
             }
-
-            //TODO: Remove
-//            sharedViewModel.testInsertTwentyWarranty()
         }
 
         setupOptionMenu()
@@ -216,6 +250,20 @@ class WarrantyListFragment : Fragment() {
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
+    fun resetOrderDisplay() {
+        binding.apply {
+            tvListWarrantyNameLabel.text = getString(R.string.warranty_name_shortened_label_text)
+            tvListExpirationDateLabel.text = getString(R.string.expiration_date_shortened_label_text)
+            sharedViewModel.apply {
+                allWarranties.value?.let { filterWarranties.value = getSortedWarranties(
+                    it,
+                    WarrantyViewModel.WarrantyAttribute.DATE,
+                    WarrantyViewModel.WarrantySort.ASC
+                ) }
+            }
+        }
+    }
+
     fun resetOptionMenu() {
         (requireActivity() as MainActivity).apply {
             supportActionBar?.setTitle(getString(R.string.app_name)) ?: requireActivity()
@@ -254,6 +302,7 @@ class WarrantyListFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
+        resetOrderDisplay()
         resetOptionMenu()
     }
 

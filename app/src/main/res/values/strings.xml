@@ -6,7 +6,11 @@
     <string name="save_text">Save</string>
     <string name="warranty_list_fab_description_text">Add new warranty</string>
     <string name="expiration_date_shortened_label_text">EXP DATE</string>
+    <string name="expiration_date_sort_asc_shortened_label_text">EXP DATE(↑)</string>
+    <string name="expiration_date_sort_dsc_shortened_label_text">EXP DATE(↓)</string>
     <string name="warranty_name_shortened_label_text">NAME</string>
+    <string name="warranty_name_sort_asc_shortened_label_text">NAME(↑)</string>
+    <string name="warranty_name_sort_dsc_shortened_label_text">NAME(↓)</string>
     <string name="menu_item_edit_text">Edit</string>
     <string name="menu_item_delete_text">Delete</string>
     <string name="warranty_name_label_text">Warranty Name</string>

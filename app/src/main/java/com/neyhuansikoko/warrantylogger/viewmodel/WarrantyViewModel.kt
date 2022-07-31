@@ -175,7 +175,7 @@ class WarrantyViewModel(application: Application): AndroidViewModel(application)
     internal fun scheduleReminder(warranty: Warranty) {
         val data = Data.Builder().putString(ExpirationNotifierWorker.nameKey, warranty.warrantyName).build()
 
-        val duration = (getDaysToDate(warranty.expirationDate) - 2).takeIf { it >= 2 } ?: 0
+        val duration = getDaysToDate(warranty.expirationDate) - 2
 
         val request = OneTimeWorkRequestBuilder<ExpirationNotifierWorker>()
             .setInitialDelay(duration, TimeUnit.DAYS)

@@ -72,20 +72,20 @@ class WarrantyDetailFragment : Fragment() {
             }
 
             btnDetailWarnExpiration.setOnClickListener {
-                val daysToDate = getDaysToDate(warranty.expirationDate) - 2
+                val daysToDate = getDaysToDate(warranty.expirationDate)
 
-                if (daysToDate > 0) {
+                if (daysToDate > 2) {
                     sharedViewModel.scheduleReminder(warranty)
 
                     Snackbar.make(
                         btnDetailWarnExpiration,
-                        "Reminder has been set to ${getDaysToDate(warranty.expirationDate) - 2} days from now",
+                        "Reminder has been set to ${daysToDate - 2} days from now",
                         Snackbar.LENGTH_SHORT
                     ).show()
                 } else {
                     Snackbar.make(
                         btnDetailWarnExpiration,
-                        "Your warranty will expired in less than 2 days",
+                        "Does not support setting reminder in less than 2 days",
                         Snackbar.LENGTH_SHORT
                     ).show()
                 }

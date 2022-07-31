@@ -33,4 +33,7 @@
     <string name="no_data_text">Empty</string>
     <string name="search_text">Search</string>
     <string name="clear_search_text">Clear Search</string>
+    <string name="channel_name">warranty_logger_channel</string>
+    <string name="channel_description">warranty_expiration</string>
+    <string name="warn_me_text">Warn Me</string>
 </resources>

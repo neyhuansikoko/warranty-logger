@@ -10,3 +10,5 @@ const val TEMP_IMAGE_SUFFIX: String = ".jpg"
 const val COMPRESSION_QUALITY: Int = 70
 
 const val NOTIFICATION_ID: Int = 37
+
+const val DEFAULT_DURATION: Int = 2

@@ -2,16 +2,14 @@ package com.neyhuansikoko.warrantylogger.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.*
-import androidx.work.Data
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
+import androidx.work.*
 import com.neyhuansikoko.warrantylogger.*
 import com.neyhuansikoko.warrantylogger.database.Warranty
 import com.neyhuansikoko.warrantylogger.database.deleteImageFile
 import com.neyhuansikoko.warrantylogger.database.isValid
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.concurrent.TimeUnit
@@ -172,17 +170,15 @@ class WarrantyViewModel(application: Application): AndroidViewModel(application)
         clearCache(getApplication())
     }
 
-    internal fun scheduleReminder(warranty: Warranty) {
+    internal fun scheduleReminder(warranty: Warranty, duration: String , timeUnit: String) {
         val data = Data.Builder().putString(ExpirationNotifierWorker.nameKey, warranty.warrantyName).build()
 
-        val duration = getDaysToDate(warranty.expirationDate) - 2
+        val delayTime = getDaysToDate(warranty.expirationDate) - inputToDays(duration.toLong(), timeUnit)
 
         val request = OneTimeWorkRequestBuilder<ExpirationNotifierWorker>()
-            .setInitialDelay(duration, TimeUnit.DAYS)
+            .setInitialDelay(delayTime, TimeUnit.DAYS)
             .setInputData(data)
             .build()
-
-        log(duration.toString())
 
         //Enqueue unique work with warranty's id as unique identifier
         workManager.enqueueUniqueWork(
@@ -190,6 +186,28 @@ class WarrantyViewModel(application: Application): AndroidViewModel(application)
             ExistingWorkPolicy.REPLACE,
             request
         )
+    }
+
+    internal suspend fun doesWorkExist(): Boolean {
+        displayModel.value?.takeIf { it.isValid() }?.let {
+            val workInfo = workManager.getWorkInfosForUniqueWork(it.id.toString()).await()
+
+            if (workInfo.size == 1) {
+                val workState = workInfo[0].state
+
+                return (
+                        workState == WorkInfo.State.BLOCKED ||
+                                workState == WorkInfo.State.ENQUEUED ||
+                                workState == WorkInfo.State.RUNNING
+                        )
+            }
+        }
+
+        return false
+    }
+
+    internal fun cancelWork() {
+        displayModel.value?.takeIf { it.isValid() }?.let { workManager.cancelUniqueWork(it.id.toString()) }
     }
 
     override fun onCleared() {

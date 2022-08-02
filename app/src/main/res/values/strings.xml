@@ -36,4 +36,11 @@
     <string name="channel_name">warranty_logger_channel</string>
     <string name="channel_description">warranty_expiration</string>
     <string name="warn_me_text">Warn Me</string>
+    <string name="duration_helper_text">Before expiration date</string>
+    <string name="remind_me_text">Remind me?</string>
+    <string name="customize_text">Customize</string>
+    <string name="duration_text">Duration</string>
+    <string name="unit_text">Unit</string>
+    <string name="apply_text">Apply</string>
+    <string name="reset_text">Reset</string>
 </resources>

@@ -2,24 +2,28 @@ package com.neyhuansikoko.warrantylogger.view
 
 import android.os.Bundle
 import android.view.*
+import android.widget.Adapter
+import android.widget.ArrayAdapter
 import androidx.core.net.toUri
 import androidx.core.view.MenuProvider
+import androidx.core.view.get
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import com.neyhuansikoko.warrantylogger.R
+import com.neyhuansikoko.warrantylogger.*
 import com.neyhuansikoko.warrantylogger.database.Warranty
 import com.neyhuansikoko.warrantylogger.database.getRemainingTime
 import com.neyhuansikoko.warrantylogger.database.isValid
 import com.neyhuansikoko.warrantylogger.databinding.FragmentWarrantyDetailBinding
-import com.neyhuansikoko.warrantylogger.formatDateMillis
-import com.neyhuansikoko.warrantylogger.getDaysToDate
-import com.neyhuansikoko.warrantylogger.getImageFile
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
-import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
@@ -33,6 +37,8 @@ class WarrantyDetailFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val sharedViewModel: WarrantyViewModel by activityViewModels()
+
+    private lateinit var arrayAdapter: ArrayAdapter<String>
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -71,29 +77,79 @@ class WarrantyDetailFragment : Fragment() {
                 }
             }
 
-            btnDetailWarnExpiration.setOnClickListener {
-                val daysToDate = getDaysToDate(warranty.expirationDate)
+            arrayAdapter = ArrayAdapter(requireContext(), R.layout.list_item_unit, resources.getStringArray(R.array.time_unit_array))
+            actvDetailUnit.setAdapter(arrayAdapter)
 
-                if (daysToDate > 2) {
-                    sharedViewModel.scheduleReminder(warranty)
+            btnDetailApply.setOnClickListener { view ->
+                closeSoftKeyboard(binding.root, requireContext())
 
-                    Snackbar.make(
-                        btnDetailWarnExpiration,
-                        "Reminder has been set to ${daysToDate - 2} days from now",
-                        Snackbar.LENGTH_SHORT
-                    ).show()
+                if (switchDetailReminder.isChecked) {
+                    setReminder(view, warranty)
                 } else {
-                    Snackbar.make(
-                        btnDetailWarnExpiration,
-                        "Does not support setting reminder in less than 2 days",
-                        Snackbar.LENGTH_SHORT
-                    ).show()
+                    switchDetailReminder.isChecked = true
+                }
+            }
+
+            btnDetailReset.setOnClickListener {
+                resetReminderDuration()
+            }
+            //Initiate default value for reminder customization
+            resetReminderDuration()
+
+            toggleBtnDetail.clearChecked()
+            toggleBtnDetail.addOnButtonCheckedListener { _, _, isChecked ->
+                if (isChecked) {
+                    cardDetailReminder.visibility = View.VISIBLE
+                } else {
+                    closeSoftKeyboard(binding.root, requireContext())
+                    cardDetailReminder.visibility = View.GONE
+                }
+            }
+
+            runBlocking {
+                val workExist = async { sharedViewModel.doesWorkExist() }
+                switchDetailReminder.isChecked = workExist.await()
+
+                switchDetailReminder.setOnCheckedChangeListener { view, isChecked ->
+                    if (isChecked) {
+                        setReminder(view, warranty)
+                    } else {
+                        sharedViewModel.cancelWork()
+                        Snackbar.make(
+                            switchDetailReminder,
+                            "Reminder has been cancelled",
+                            Snackbar.LENGTH_SHORT
+                        ).show()
+                    }
                 }
             }
         }
-
         setupOptionMenu()
     }
+
+    private fun setReminder(view: View, warranty: Warranty) {
+        val daysToDate = getDaysToDate(warranty.expirationDate)
+
+        val duration = binding.tilEtDetailDuration.text.toString()
+        val timeUnit = binding.actvDetailUnit.text.toString()
+
+        sharedViewModel.scheduleReminder(warranty, duration, timeUnit)
+
+        Snackbar.make(
+            view,
+            "Reminder has been set to ${daysToDate - inputToDays(duration.toLong(), timeUnit)} days from now",
+            Snackbar.LENGTH_SHORT
+        ).show()
+    }
+
+    //Set default value for reminder customization
+    private fun resetReminderDuration() {
+        binding.apply {
+            tilEtDetailDuration.setText(DEFAULT_DURATION.toString())
+            actvDetailUnit.setText(arrayAdapter.getItem(0), false)
+        }
+    }
+
 
     private fun setupOptionMenu() {
         //Create option menu

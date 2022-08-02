@@ -98,3 +98,11 @@ fun getDaysToDate(date: Long): Long {
 
     return expirationDate - currentDate
 }
+
+fun inputToDays(duration: Long, timeUnit: String): Long {
+    return when (timeUnit) {
+        "Days" -> duration
+        "Weeks" -> duration * 7
+        else -> duration * 30
+    }
+}

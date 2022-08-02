@@ -8,6 +8,8 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:animateLayoutChanges="true"
+        android:clipToPadding="false"
         android:padding="16dp"
         tools:context=".view.WarrantyDetailFragment">
 
@@ -81,14 +83,116 @@
             app:layout_constraintTop_toBottomOf="@+id/tv_detail_expiration_date_label"
             tools:text="17/08/2030" />
 
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switch_detail_reminder"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-black"
+            android:text="@string/remind_me_text"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="?android:attr/textColorSecondary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/tv_detail_remaining_time_label"
+            app:layout_constraintTop_toBottomOf="@+id/tv_detail_remaining_time_label" />
+
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/toggle_btn_detail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="@+id/switch_detail_reminder"
+            app:layout_constraintTop_toBottomOf="@+id/switch_detail_reminder">
+
+            <Button
+                android:id="@+id/btn_detail_customize_reminder"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/customize_text" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_detail_reminder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/toggle_btn_detail"
+            tools:visibility="visible">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_detail_duration"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:hint="@string/duration_text"
+                    app:helperText="@string/duration_helper_text"
+                    app:helperTextEnabled="true"
+                    app:layout_constraintEnd_toStartOf="@+id/til_detail_unit"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/til_et_detail_duration"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="number" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_detail_unit"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/unit_text"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/til_detail_duration"
+                    app:layout_constraintTop_toTopOf="@id/til_detail_duration">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/actv_detail_unit"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="none"
+                        tools:ignore="LabelFor" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <Button
+                    android:id="@+id/btn_detail_apply"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/apply_text"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/til_detail_duration" />
+
+                <Button
+                    android:id="@+id/btn_detail_reset"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:text="@string/reset_text"
+                    app:layout_constraintBottom_toBottomOf="@+id/btn_detail_apply"
+                    app:layout_constraintEnd_toStartOf="@+id/btn_detail_apply"
+                    app:layout_constraintTop_toTopOf="@+id/btn_detail_apply" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <com.google.android.material.divider.MaterialDivider
             android:id="@+id/div_expiration_date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="16dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/btn_detail_warn_expiration" />
+            app:layout_constraintTop_toBottomOf="@+id/card_detail_reminder" />
 
         <ImageView
             android:id="@+id/img_detail_ic_image"
@@ -154,16 +258,6 @@
             app:layout_constraintTop_toTopOf="@+id/tv_detail_remaining_time_label"
             app:layout_constraintVertical_bias="0.0"
             tools:text="expired" />
-
-        <Button
-            android:id="@+id/btn_detail_warn_expiration"
-            style="?attr/materialButtonOutlinedStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/warn_me_text"
-            app:layout_constraintStart_toStartOf="@+id/tv_detail_remaining_time_label"
-            app:layout_constraintTop_toBottomOf="@+id/tv_detail_remaining_time_label" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

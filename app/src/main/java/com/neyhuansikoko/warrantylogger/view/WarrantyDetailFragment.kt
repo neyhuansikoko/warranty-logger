@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.*
 import android.widget.Adapter
 import android.widget.ArrayAdapter
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.net.toUri
 import androidx.core.view.MenuProvider
 import androidx.core.view.get
@@ -24,6 +25,7 @@ import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.util.*
 
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
@@ -80,14 +82,14 @@ class WarrantyDetailFragment : Fragment() {
             arrayAdapter = ArrayAdapter(requireContext(), R.layout.list_item_unit, resources.getStringArray(R.array.time_unit_array))
             actvDetailUnit.setAdapter(arrayAdapter)
 
+            if (getDaysToDate(warranty.expirationDate) > 1) {
+                switchDetailReminder.visibility = View.VISIBLE
+                toggleBtnDetail.visibility = View.VISIBLE
+            }
+
             btnDetailApply.setOnClickListener { view ->
                 closeSoftKeyboard(binding.root, requireContext())
-
-                if (switchDetailReminder.isChecked) {
-                    setReminder(view, warranty)
-                } else {
-                    switchDetailReminder.isChecked = true
-                }
+                setReminder(view, warranty)
             }
 
             btnDetailReset.setOnClickListener {
@@ -110,9 +112,11 @@ class WarrantyDetailFragment : Fragment() {
                 val workExist = async { sharedViewModel.doesWorkExist() }
                 switchDetailReminder.isChecked = workExist.await()
 
-                switchDetailReminder.setOnCheckedChangeListener { view, isChecked ->
-                    if (isChecked) {
-                        setReminder(view, warranty)
+                switchDetailReminder.setOnClickListener { view ->
+                    if (switchDetailReminder.isChecked) {
+                        val delayTime = setReminder(view, warranty)
+
+                        if (delayTime < 1) { switchDetailReminder.isChecked = false }
                     } else {
                         sharedViewModel.cancelWork()
                         Snackbar.make(
@@ -127,19 +131,40 @@ class WarrantyDetailFragment : Fragment() {
         setupOptionMenu()
     }
 
-    private fun setReminder(view: View, warranty: Warranty) {
-        val daysToDate = getDaysToDate(warranty.expirationDate)
+    private fun setReminder(view: View, warranty: Warranty): Long {
+        binding.apply {
+            val duration = tilEtDetailDuration.text.toString()
+            val timeUnit = actvDetailUnit.text.toString()
+            val delayTime = sharedViewModel.scheduleReminder(warranty, duration, timeUnit)
 
-        val duration = binding.tilEtDetailDuration.text.toString()
-        val timeUnit = binding.actvDetailUnit.text.toString()
+            if (duration.toLong() > 1) {
+                if (delayTime > 0) {
+                    Snackbar.make(
+                        view,
+                        "Reminder has been set to $delayTime days from now",
+                        Snackbar.LENGTH_SHORT
+                    ).show()
 
-        sharedViewModel.scheduleReminder(warranty, duration, timeUnit)
+                    switchDetailReminder.isChecked = true
+                } else {
+                    Snackbar.make(
+                        view,
+                        "Cannot set the reminder at the specified time",
+                        Snackbar.LENGTH_SHORT
+                    ).show()
+                }
+            } else {
+                Snackbar.make(
+                    view,
+                    "Cannot set duration to be smaller than 1",
+                    Snackbar.LENGTH_SHORT
+                ).show()
 
-        Snackbar.make(
-            view,
-            "Reminder has been set to ${daysToDate - inputToDays(duration.toLong(), timeUnit)} days from now",
-            Snackbar.LENGTH_SHORT
-        ).show()
+                return 0
+            }
+
+            return delayTime
+        }
     }
 
     //Set default value for reminder customization

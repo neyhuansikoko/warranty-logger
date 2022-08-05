@@ -170,22 +170,26 @@ class WarrantyViewModel(application: Application): AndroidViewModel(application)
         clearCache(getApplication())
     }
 
-    internal fun scheduleReminder(warranty: Warranty, duration: String , timeUnit: String) {
+    internal fun scheduleReminder(warranty: Warranty, duration: String , timeUnit: String) : Long {
         val data = Data.Builder().putString(ExpirationNotifierWorker.nameKey, warranty.warrantyName).build()
 
         val delayTime = getDaysToDate(warranty.expirationDate) - inputToDays(duration.toLong(), timeUnit)
 
-        val request = OneTimeWorkRequestBuilder<ExpirationNotifierWorker>()
-            .setInitialDelay(delayTime, TimeUnit.DAYS)
-            .setInputData(data)
-            .build()
+        if (delayTime > 0) {
+            val request = OneTimeWorkRequestBuilder<ExpirationNotifierWorker>()
+                .setInitialDelay(delayTime, TimeUnit.DAYS)
+                .setInputData(data)
+                .build()
 
-        //Enqueue unique work with warranty's id as unique identifier
-        workManager.enqueueUniqueWork(
-            warranty.id.toString(),
-            ExistingWorkPolicy.REPLACE,
-            request
-        )
+            //Enqueue unique work with warranty's id as unique identifier
+            workManager.enqueueUniqueWork(
+                warranty.id.toString(),
+                ExistingWorkPolicy.REPLACE,
+                request
+            )
+        }
+
+        return delayTime
     }
 
     internal suspend fun doesWorkExist(): Boolean {

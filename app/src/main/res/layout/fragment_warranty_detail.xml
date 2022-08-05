@@ -91,16 +91,20 @@
             android:text="@string/remind_me_text"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="?android:attr/textColorSecondary"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@+id/tv_detail_remaining_time_label"
-            app:layout_constraintTop_toBottomOf="@+id/tv_detail_remaining_time_label" />
+            app:layout_constraintTop_toBottomOf="@+id/tv_detail_remaining_time_label"
+            tools:visibility="visible" />
 
         <com.google.android.material.button.MaterialButtonToggleGroup
             android:id="@+id/toggle_btn_detail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="@+id/switch_detail_reminder"
-            app:layout_constraintTop_toBottomOf="@+id/switch_detail_reminder">
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/switch_detail_reminder"
+            tools:visibility="visible">
 
             <Button
                 android:id="@+id/btn_detail_customize_reminder"
@@ -123,7 +127,10 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="16dp">
+                android:paddingStart="16dp"
+                android:paddingTop="32dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="16dp">
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/til_detail_duration"

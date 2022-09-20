@@ -1,4 +1,4 @@
-# warranty-logger
+# Warranty Logger
 An app to log warranty.
 
 Features:

@@ -203,6 +203,7 @@ class WarrantyListFragment : Fragment() {
         //Create option menu
         requireActivity().addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                (requireActivity() as MainActivity).supportActionBar?.title = findNavController().currentDestination?.label
                 menu.clear()
                 menuInflater.inflate(R.menu.menu_list, menu)
 
@@ -266,7 +267,7 @@ class WarrantyListFragment : Fragment() {
 
     fun resetOptionMenu() {
         (requireActivity() as MainActivity).apply {
-            supportActionBar?.setTitle(getString(R.string.app_name)) ?: requireActivity()
+            supportActionBar?.title = findNavController().currentDestination?.label
             invalidateOptionsMenu()
         }
         sharedViewModel.apply { filterWarranties.value = allWarranties.value }
@@ -303,7 +304,6 @@ class WarrantyListFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         resetOrderDisplay()
-        resetOptionMenu()
     }
 
     override fun onResume() {

@@ -12,12 +12,16 @@ import kotlin.math.ceil
 data class Warranty(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     @ColumnInfo(name = "warranty_name") var warrantyName: String,
+    @ColumnInfo(name = "note") var note: String = "",
     @ColumnInfo(name = "expiration_date") var expirationDate: Long,
+    @ColumnInfo(name = "purchase_date") var purchaseDate: Long = Long.MIN_VALUE,
+    @ColumnInfo(name = "created_at") val createdDate: Long = Long.MIN_VALUE,
+    @ColumnInfo(name = "modified_last_at") var modifiedDate: Long = Long.MIN_VALUE,
     @ColumnInfo(name = "image") var image: String?
 )
 
 fun Warranty.getRemainingTime(): String {
-    val currentDay = Calendar.getInstance().timeInMillis
+    val currentDay = System.currentTimeMillis()
     val remainingDays = (ceil(expirationDate.toDouble() / DAY_MILLIS) - currentDay.floorDiv(DAY_MILLIS)).toInt()
     val remainingMonths = (ceil(expirationDate.toDouble() / MONTH_MILLIS) - ceil(currentDay.toDouble() / MONTH_MILLIS)).toInt()
     val remainingYear = (ceil(expirationDate.toDouble() / YEAR_MILLIS) - ceil(currentDay.toDouble() / YEAR_MILLIS)).toInt()

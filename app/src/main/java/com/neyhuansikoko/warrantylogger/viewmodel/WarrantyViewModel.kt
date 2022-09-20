@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 class WarrantyViewModel(application: Application): AndroidViewModel(application) {
@@ -212,6 +213,12 @@ class WarrantyViewModel(application: Application): AndroidViewModel(application)
 
     internal fun cancelWork() {
         displayModel.value?.takeIf { it.isValid() }?.let { workManager.cancelUniqueWork(it.id.toString()) }
+    }
+
+    fun calculateExpirationDate(duration: String, timeUnit: String): Long {
+        inputModel.apply {
+            return purchaseDate + inputToDays(duration.toLong(), timeUnit) * DAY_MILLIS
+        }
     }
 
     override fun onCleared() {

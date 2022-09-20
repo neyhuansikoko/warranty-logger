@@ -27,9 +27,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.util.*
 
-/**
- * A simple [Fragment] subclass as the second destination in the navigation.
- */
 class WarrantyDetailFragment : Fragment() {
 
     private var _binding: FragmentWarrantyDetailBinding? = null
@@ -67,6 +64,14 @@ class WarrantyDetailFragment : Fragment() {
     private fun bindModel(warranty: Warranty) {
         binding.apply {
             tvDetailWarrantyName.text = warranty.warrantyName
+            tvDetailNote.text = warranty.note.takeIf { it.isNotBlank() } ?: getString(R.string.no_data_text)
+            tvDetailCreatedDate.text = formatDateTimeMillis(warranty.createdDate)
+            tvDetailModifiedDate.text = formatDateTimeMillis(warranty.modifiedDate)
+            tvDetailPurchaseDate.text = if (warranty.purchaseDate > Long.MIN_VALUE) {
+                formatDateMillis(warranty.purchaseDate)
+            } else {
+                getString(R.string.no_information_text)
+            }
             tvDetailExpirationDate.text = formatDateMillis(warranty.expirationDate)
             tvDetailRemainingTime.text = warranty.getRemainingTime()
 
@@ -83,8 +88,8 @@ class WarrantyDetailFragment : Fragment() {
             actvDetailUnit.setAdapter(arrayAdapter)
 
             if (getDaysToDate(warranty.expirationDate) > 1) {
-                switchDetailReminder.visibility = View.VISIBLE
-                toggleBtnDetail.visibility = View.VISIBLE
+                switchDetailReminder.isEnabled = true
+                btnDetailCustomizeReminder.isEnabled = true
             }
 
             btnDetailApply.setOnClickListener { view ->

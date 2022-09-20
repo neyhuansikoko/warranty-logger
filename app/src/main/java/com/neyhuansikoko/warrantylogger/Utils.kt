@@ -10,6 +10,7 @@ import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.content.getSystemService
 import androidx.exifinterface.media.ExifInterface
 import androidx.lifecycle.MutableLiveData
+import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.neyhuansikoko.warrantylogger.database.Warranty
 import java.io.File
@@ -27,16 +28,19 @@ fun logPing() {
     log("Ping!")
 }
 
-var DEFAULT_DATE_SELECTION: Long = MaterialDatePicker.todayInUtcMilliseconds() + DAY_MILLIS
+val DEFAULT_DATE_SELECTION: Long get() =  MaterialDatePicker.todayInUtcMilliseconds() + DAY_MILLIS
+
+val EMPTY_DATE_CONSTRAINT: CalendarConstraints = CalendarConstraints.Builder().build()
 
 private val _DEFAULT_MODEL = Warranty(
     warrantyName = "",
-    expirationDate = 0,
+    expirationDate = Long.MIN_VALUE,
     image = null
 )
 val DEFAULT_MODEL get() = _DEFAULT_MODEL.copy()
 
 fun formatDateMillis(dateMillis: Long): String = SimpleDateFormat("dd/MM/yyyy").format(dateMillis)
+fun formatDateTimeMillis(dateMillis: Long): String = SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(dateMillis)
 
 fun getImageFile(context: Context, image: String): File? {
     val imageDir = File(context.filesDir, IMAGE_DIR)
@@ -103,6 +107,7 @@ fun inputToDays(duration: Long, timeUnit: String): Long {
     return when (timeUnit) {
         "Days" -> duration
         "Weeks" -> duration * 7
-        else -> duration * 30
+        "Months" -> duration * 30
+        else -> duration * 365
     }
 }

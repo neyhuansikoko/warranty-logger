@@ -1,9 +1,11 @@
 package com.neyhuansikoko.warrantylogger.view
 
+import android.app.ProgressDialog.show
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -13,7 +15,6 @@ import com.google.android.material.datepicker.DateValidatorPointForward
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.neyhuansikoko.warrantylogger.*
-import com.neyhuansikoko.warrantylogger.database.Warranty
 import com.neyhuansikoko.warrantylogger.database.isValid
 import com.neyhuansikoko.warrantylogger.databinding.FragmentAddWarrantyBinding
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
@@ -29,6 +30,10 @@ class AddWarrantyFragment : Fragment() {
     private val sharedViewModel: WarrantyViewModel by activityViewModels()
 
     private val inputWarrantyName: String get() = binding.tilEtAddWarrantyName.text.toString()
+    private val inputNote: String get() = binding.tilEtAddNote.text.toString()
+    private val inputPurchaseDate: String get() = binding.tilEtAddPurchaseDate.text.toString()
+    private val inputDuration: String get() = binding.tilEtAddDuration.text.toString()
+    private val inputUnit: String get() = binding.actvAddUnit.text.toString()
     private val inputExpirationDate: String get() = binding.tilEtAddExpirationDate.text.toString()
     private val model get() = sharedViewModel.inputModel
 
@@ -55,6 +60,21 @@ class AddWarrantyFragment : Fragment() {
             }
 
             tilEtAddWarrantyName.setText(model.warrantyName)
+            tilEtAddNote.setText(model.note)
+            tilEtAddPurchaseDate.setText(if (model.purchaseDate > DEFAULT_MODEL.expirationDate) {
+                formatDateMillis(model.purchaseDate)
+            } else {
+                getString(R.string.empty)
+            })
+
+            val adapter = ArrayAdapter(
+                requireContext(),
+                R.layout.list_item_unit,
+                resources.getStringArray(R.array.time_unit_array_larger)
+            )
+            actvAddUnit.setAdapter(adapter)
+            actvAddUnit.setText(adapter.getItem(0), false)
+
             tilEtAddExpirationDate.setText(if (model.expirationDate > DEFAULT_MODEL.expirationDate) {
                 formatDateMillis(model.expirationDate)
             } else {
@@ -72,13 +92,19 @@ class AddWarrantyFragment : Fragment() {
                 }
             } else {
                 onSaveClick = {
+                    //Using modifiedDate value in order to match the value between variable when inserted
+                    sharedViewModel.inputModel = model.copy(createdDate = model.modifiedDate)
                     sharedViewModel.insertWarranty()
                 }
             }
 
             btnAddSave.setOnClickListener {
-                if (!isTextFieldEmpty()) {
+                if (isInputValid()) {
                     model.warrantyName = inputWarrantyName
+                    model.note = inputNote
+                    model.modifiedDate = System.currentTimeMillis()
+                    model.expirationDate = model.expirationDate.takeIf { it > DEFAULT_MODEL.expirationDate && inputDuration.isBlank() }
+                        ?: sharedViewModel.calculateExpirationDate(inputDuration, inputUnit)
                     onSaveClick()
                     findNavController().navigate(R.id.action_addWarrantyFragment_to_warrantyListFragment)
                 }
@@ -86,6 +112,7 @@ class AddWarrantyFragment : Fragment() {
 
             btnAddTakePicture.setOnClickListener {
                 model.warrantyName = inputWarrantyName
+                model.note = inputNote
                 navigateToCamera()
             }
 
@@ -102,8 +129,24 @@ class AddWarrantyFragment : Fragment() {
                 }
             }
 
+            tilEtAddPurchaseDate.setOnClickListener {
+                val onPositiveClick: (Long) -> Unit = { date ->
+                    model.purchaseDate = date
+                    binding.tilEtAddPurchaseDate.setText(formatDateMillis(model.purchaseDate))
+                }
+
+                showDatePicker(model.purchaseDate, onPositiveClick)
+            }
+
             tilEtAddExpirationDate.setOnClickListener {
-                showDatePicker(model)
+                val dateConstraints = CalendarConstraints.Builder()
+                    .setValidator(DateValidatorPointForward.from(DEFAULT_DATE_SELECTION))
+                    .build()
+                val onPositiveClick: (Long) -> Unit = { date ->
+                    model.expirationDate = date
+                    binding.tilEtAddExpirationDate.setText(formatDateMillis(model.expirationDate))
+                }
+                showDatePicker(model.expirationDate, onPositiveClick, dateConstraints)
             }
         }
     }
@@ -129,44 +172,69 @@ class AddWarrantyFragment : Fragment() {
         findNavController().navigate(R.id.action_addWarrantyFragment_to_warrantyListFragment)
     }
 
-    private fun isTextFieldEmpty(): Boolean {
+
+    private fun isInputValid(): Boolean {
         setError()
-        return inputWarrantyName.isBlank() || inputExpirationDate.isBlank()
+        return inputWarrantyName.isNotBlank() &&
+                (inputExpirationDate.isNotBlank() || (inputPurchaseDate.isNotBlank() && inputDuration.isNotBlank())) &&
+                ((model.purchaseDate < model.expirationDate).takeIf { inputPurchaseDate.isNotBlank() } ?: true)
     }
 
     private fun setError() {
         binding.apply {
-            tilEtAddWarrantyName.error = if (inputWarrantyName.isBlank()) {
-                getString(R.string.warranty_name_error_text)
-            } else {
-                null
+            tilEtAddWarrantyName.error = null
+            tilEtAddPurchaseDate.error = null
+            tilEtAddDuration.error = null
+            tilAddExpirationDate.error = null
+
+            if (inputWarrantyName.isBlank()) {
+                tilEtAddWarrantyName.error = getString(R.string.warranty_name_error_text)
             }
-            tilEtAddExpirationDate.error = if (inputExpirationDate.isBlank()) {
-                getString(R.string.warranty_name_error_text)
+
+            if (inputExpirationDate.isBlank()) {
+                if (inputPurchaseDate.isBlank() || inputDuration.isBlank()) {
+                    tilEtAddPurchaseDate.error = getString(R.string.purchase_date_error_text)
+                    tilEtAddDuration.error = getString(R.string.duration_error_text)
+                } else {
+                    //trigger purchase date and expiration date update
+                }
+            } else if (inputPurchaseDate.isNotBlank()) {
+                if (inputDuration.isBlank()) {
+                    if (model.purchaseDate >= model.expirationDate) {
+                        tilEtAddPurchaseDate.error = getString(R.string.purchase_expiration_date_error_text)
+                        tilAddExpirationDate.error = getString(R.string.purchase_expiration_date_error_text)
+                    } else {
+                        //trigger purchase date update
+                    }
+                } else {
+                    //trigger purchase and expiration date update
+                }
             } else {
-                null
+                //trigger expiration date update
             }
         }
     }
 
-    private fun showDatePicker(warranty: Warranty) {
-        val dateConstraints = CalendarConstraints.Builder()
-            .setValidator(DateValidatorPointForward.from(DEFAULT_DATE_SELECTION))
-            .build()
+    private fun showDatePicker(
+        defaultDate: Long,
+        onPositiveClick: (Long) -> Unit,
+        constraints: CalendarConstraints = EMPTY_DATE_CONSTRAINT
+    ) {
         val datePicker =
             MaterialDatePicker.Builder.datePicker()
-                .setCalendarConstraints(dateConstraints)
+                .setCalendarConstraints(constraints)
                 .setTitleText("Select date")
                 .setSelection(
-                    warranty.expirationDate.takeIf {
+                    defaultDate.takeIf {
                         it > DEFAULT_MODEL.expirationDate
-                    } ?: DEFAULT_DATE_SELECTION
+                    } ?: DEFAULT_DATE_SELECTION.takeIf {
+                        constraints != EMPTY_DATE_CONSTRAINT
+                    } ?: (DEFAULT_DATE_SELECTION - DAY_MILLIS)
                 )
                 .build()
         datePicker.apply {
             this.addOnPositiveButtonClickListener { date ->
-                warranty.expirationDate = date
-                binding.tilEtAddExpirationDate.setText(formatDateMillis(warranty.expirationDate))
+                onPositiveClick(date)
             }
             this.isCancelable = false
             show(this@AddWarrantyFragment.requireActivity().supportFragmentManager, "tag")

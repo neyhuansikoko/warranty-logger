@@ -2,7 +2,7 @@
 An app to log warranty.
 
 Features:
-- Expiration date tracking and remainder
+- Expiration date tracking and reminder
 - Setting image for each warranty
 - Search and sort feature
 

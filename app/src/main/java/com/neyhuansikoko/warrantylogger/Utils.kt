@@ -6,8 +6,6 @@ import android.graphics.BitmapFactory
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import androidx.core.content.ContextCompat.getSystemService
-import androidx.core.content.getSystemService
 import androidx.exifinterface.media.ExifInterface
 import androidx.lifecycle.MutableLiveData
 import com.google.android.material.datepicker.CalendarConstraints
@@ -24,16 +22,13 @@ fun log(message: String) {
     Log.d("Test", message)
 }
 
-fun logPing() {
-    log("Ping!")
-}
-
 val DEFAULT_DATE_SELECTION: Long get() =  MaterialDatePicker.todayInUtcMilliseconds() + DAY_MILLIS
 
 val EMPTY_DATE_CONSTRAINT: CalendarConstraints = CalendarConstraints.Builder().build()
 
 private val _DEFAULT_MODEL = Warranty(
     warrantyName = "",
+    purchaseDate = MaterialDatePicker.todayInUtcMilliseconds(),
     expirationDate = Long.MIN_VALUE,
     image = null
 )

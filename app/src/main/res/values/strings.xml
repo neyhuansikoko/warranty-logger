@@ -54,6 +54,8 @@
     <string name="note_label_text">Note</string>
     <string name="enter_warranty_note_text">Enter Warranty Note</string>
     <string name="helper_text">*Required</string>
-    <string name="date_helper_text">* Either fill the purchase date, duration, and unit\n* Or fill the expiration date</string>
+    <string name="date_helper_text">*Set the expiration date, either by duration or by deadline. Required.</string>
     <string name="pick_image_text">Pick Image</string>
+    <string name="btn_tg_duration_text">Duration</string>
+    <string name="btn_tg_deadline_text">Deadline</string>
 </resources>

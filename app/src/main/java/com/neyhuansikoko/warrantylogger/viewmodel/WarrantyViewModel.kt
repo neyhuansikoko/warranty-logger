@@ -9,10 +9,8 @@ import com.neyhuansikoko.warrantylogger.database.deleteImageFile
 import com.neyhuansikoko.warrantylogger.database.isValid
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.util.*
 import java.util.concurrent.TimeUnit
 
 class WarrantyViewModel(application: Application): AndroidViewModel(application) {
@@ -217,7 +215,7 @@ class WarrantyViewModel(application: Application): AndroidViewModel(application)
 
     fun calculateExpirationDate(duration: String, timeUnit: String): Long {
         inputModel.apply {
-            return purchaseDate + inputToDays(duration.toLong(), timeUnit) * DAY_MILLIS
+            return inputModel.purchaseDate + inputToDays(duration.toLong(), timeUnit) * DAY_MILLIS
         }
     }
 

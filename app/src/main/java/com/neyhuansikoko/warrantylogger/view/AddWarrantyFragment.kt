@@ -39,6 +39,7 @@ class AddWarrantyFragment : Fragment() {
     private val inputDuration: String get() = binding.tilEtAddDuration.text.toString()
     private val inputUnit: String get() = binding.actvAddUnit.text.toString()
     private val inputExpirationDate: String get() = binding.tilEtAddExpirationDate.text.toString()
+    private val tgCheckedId: Int get() = binding.tgAddDeadline.checkedButtonId
     private val imageChooserActivity = registerForActivityResult(ActivityResultContracts.GetContent()) {imageUri ->
         //Return content URI
         if (imageUri != null) {
@@ -84,11 +85,7 @@ class AddWarrantyFragment : Fragment() {
 
             tilEtAddWarrantyName.setText(model.warrantyName)
             tilEtAddNote.setText(model.note)
-            tilEtAddPurchaseDate.setText(if (model.purchaseDate > DEFAULT_MODEL.expirationDate) {
-                formatDateMillis(model.purchaseDate)
-            } else {
-                getString(R.string.empty)
-            })
+            tilEtAddPurchaseDate.setText(formatDateMillis(model.purchaseDate))
 
             val adapter = ArrayAdapter(
                 requireContext(),
@@ -97,6 +94,22 @@ class AddWarrantyFragment : Fragment() {
             )
             actvAddUnit.setAdapter(adapter)
             actvAddUnit.setText(adapter.getItem(0), false)
+
+            tgAddDeadline.addOnButtonCheckedListener { _, checkedId, isChecked ->
+                if (isChecked) {
+                    closeSoftKeyboard(binding.root, requireContext())
+                    when (checkedId) {
+                        R.id.btn_tg_add_duration -> {
+                            tilAddExpirationDate.visibility = View.GONE
+                            layoutAddDuration.visibility = View.VISIBLE
+                        }
+                        R.id.btn_tg_add_expiration_date -> {
+                            tilAddExpirationDate.visibility = View.VISIBLE
+                            layoutAddDuration.visibility = View.GONE
+                        }
+                    }
+                }
+            }
 
             tilEtAddExpirationDate.setText(if (model.expirationDate > DEFAULT_MODEL.expirationDate) {
                 formatDateMillis(model.expirationDate)
@@ -126,8 +139,11 @@ class AddWarrantyFragment : Fragment() {
                     model.warrantyName = inputWarrantyName
                     model.note = inputNote
                     model.modifiedDate = System.currentTimeMillis()
-                    model.expirationDate = model.expirationDate.takeIf { it > DEFAULT_MODEL.expirationDate && inputDuration.isBlank() }
-                        ?: sharedViewModel.calculateExpirationDate(inputDuration, inputUnit)
+                    model.expirationDate = if (tgCheckedId == R.id.btn_tg_add_duration) {
+                        sharedViewModel.calculateExpirationDate(inputDuration, inputUnit)
+                    } else {
+                        model.expirationDate
+                    }
                     onSaveClick()
                     findNavController().navigate(R.id.action_addWarrantyFragment_to_warrantyListFragment)
                 }
@@ -207,8 +223,8 @@ class AddWarrantyFragment : Fragment() {
     private fun isInputValid(): Boolean {
         setError()
         return inputWarrantyName.isNotBlank() &&
-                (inputExpirationDate.isNotBlank() || (inputPurchaseDate.isNotBlank() && inputDuration.isNotBlank())) &&
-                ((model.purchaseDate < model.expirationDate).takeIf { inputPurchaseDate.isNotBlank() } ?: true)
+                ((tgCheckedId == R.id.btn_tg_add_expiration_date && inputExpirationDate.isNotBlank() && inputExpirationDate > inputPurchaseDate) ||
+                        tgCheckedId == R.id.btn_tg_add_duration && inputDuration.isNotBlank())
     }
 
     private fun setError() {
@@ -222,26 +238,10 @@ class AddWarrantyFragment : Fragment() {
                 tilEtAddWarrantyName.error = getString(R.string.warranty_name_error_text)
             }
 
-            if (inputExpirationDate.isBlank()) {
-                if (inputPurchaseDate.isBlank() || inputDuration.isBlank()) {
-                    tilEtAddPurchaseDate.error = getString(R.string.purchase_date_error_text)
-                    tilEtAddDuration.error = getString(R.string.duration_error_text)
-                } else {
-                    //trigger purchase date and expiration date update
-                }
-            } else if (inputPurchaseDate.isNotBlank()) {
-                if (inputDuration.isBlank()) {
-                    if (model.purchaseDate >= model.expirationDate) {
-                        tilEtAddPurchaseDate.error = getString(R.string.purchase_expiration_date_error_text)
-                        tilAddExpirationDate.error = getString(R.string.purchase_expiration_date_error_text)
-                    } else {
-                        //trigger purchase date update
-                    }
-                } else {
-                    //trigger purchase and expiration date update
-                }
-            } else {
-                //trigger expiration date update
+            if (tgCheckedId == R.id.btn_tg_add_duration && inputDuration.isBlank()) {
+                tilEtAddDuration.error = getString(R.string.duration_error_text)
+            } else if (tgCheckedId == R.id.btn_tg_add_expiration_date && inputExpirationDate.isBlank()) {
+                tilEtAddExpirationDate.error = getString(R.string.purchase_expiration_date_error_text)
             }
         }
     }
@@ -260,7 +260,7 @@ class AddWarrantyFragment : Fragment() {
                         it > DEFAULT_MODEL.expirationDate
                     } ?: DEFAULT_DATE_SELECTION.takeIf {
                         constraints != EMPTY_DATE_CONSTRAINT
-                    } ?: (DEFAULT_DATE_SELECTION - DAY_MILLIS)
+                    } ?: (MaterialDatePicker.todayInUtcMilliseconds())
                 )
                 .build()
         datePicker.apply {

@@ -134,13 +134,29 @@
                 android:focusable="false" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <Button
-            android:id="@+id/btn_add_take_picture"
-            style="?attr/materialButtonOutlinedStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/take_picture_text"
-            app:icon="@drawable/ic_image" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_add_take_picture"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/take_picture_text"
+                app:icon="@drawable/ic_camera" />
+
+            <Button
+                android:id="@+id/btn_add_pick_image"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="@string/pick_image_text"
+                app:icon="@drawable/ic_image" />
+
+        </LinearLayout>
 
         <TextView
             android:id="@+id/tv_add_image_name"

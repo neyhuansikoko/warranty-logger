@@ -55,4 +55,5 @@
     <string name="enter_warranty_note_text">Enter Warranty Note</string>
     <string name="helper_text">*Required</string>
     <string name="date_helper_text">* Either fill the purchase date, duration, and unit\n* Or fill the expiration date</string>
+    <string name="pick_image_text">Pick Image</string>
 </resources>

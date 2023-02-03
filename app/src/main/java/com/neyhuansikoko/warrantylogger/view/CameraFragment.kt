@@ -20,10 +20,7 @@ import androidx.core.net.toFile
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import com.neyhuansikoko.warrantylogger.DEFAULT_MODEL
-import com.neyhuansikoko.warrantylogger.R
-import com.neyhuansikoko.warrantylogger.TEMP_IMAGE_SUFFIX
-import com.neyhuansikoko.warrantylogger.compressImage
+import com.neyhuansikoko.warrantylogger.*
 import com.neyhuansikoko.warrantylogger.databinding.FragmentCameraBinding
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
 import java.io.File
@@ -63,7 +60,7 @@ class CameraFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         // Inflate the layout for this fragment
         _binding = FragmentCameraBinding.inflate(inflater, container, false)
         return binding.root
@@ -176,7 +173,6 @@ class CameraFragment : Fragment() {
 
     companion object {
         private const val TAG = "WarrantyLogger"
-        private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
         private val REQUIRED_PERMISSIONS =
             mutableListOf (
                 Manifest.permission.CAMERA,

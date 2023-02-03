@@ -1,11 +1,11 @@
 package com.neyhuansikoko.warrantylogger.view
 
-import android.app.ProgressDialog.show
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -18,6 +18,10 @@ import com.neyhuansikoko.warrantylogger.*
 import com.neyhuansikoko.warrantylogger.database.isValid
 import com.neyhuansikoko.warrantylogger.databinding.FragmentAddWarrantyBinding
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
+import kotlinx.coroutines.*
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
 
 class AddWarrantyFragment : Fragment() {
 
@@ -35,6 +39,25 @@ class AddWarrantyFragment : Fragment() {
     private val inputDuration: String get() = binding.tilEtAddDuration.text.toString()
     private val inputUnit: String get() = binding.actvAddUnit.text.toString()
     private val inputExpirationDate: String get() = binding.tilEtAddExpirationDate.text.toString()
+    private val imageChooserActivity = registerForActivityResult(ActivityResultContracts.GetContent()) {imageUri ->
+        //Return content URI
+        if (imageUri != null) {
+            val inputStream = context?.contentResolver?.openInputStream(imageUri)
+            val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
+                .format(System.currentTimeMillis())
+            runBlocking {
+                val file = withContext(Dispatchers.IO) {
+                    File.createTempFile(name, TEMP_IMAGE_SUFFIX, requireActivity().cacheDir)
+                }
+                file.outputStream().use { outputStream ->
+                    inputStream?.copyTo(outputStream)
+                }
+                sharedViewModel.tempImage = file.compressImage()
+                sharedViewModel.tempImage?.let { showImage(it) }
+                binding.imgAddImage.invalidate()
+            }
+        }
+    }
     private val model get() = sharedViewModel.inputModel
 
     private var onSaveClick: () -> Unit = {}
@@ -42,7 +65,7 @@ class AddWarrantyFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         // Inflate the layout for this fragment
         _binding = FragmentAddWarrantyBinding.inflate(inflater, container, false)
         return binding.root
@@ -116,16 +139,16 @@ class AddWarrantyFragment : Fragment() {
                 navigateToCamera()
             }
 
+            btnAddPickImage.setOnClickListener {
+                imageChooserActivity.launch("image/*")
+            }
+
             //Check if tempImage exist and load it, if not then try to load from modelWarranty
             sharedViewModel.tempImage?.let {
-                tvAddImageName.visibility = View.GONE
-                imgAddImage.setImageURI(it.toUri())
-                imgAddImage.visibility = View.VISIBLE
+                showImage(it)
             } ?: model.image?.let { image ->
                 getImageFile(requireActivity(), image)?.let {
-                    tvAddImageName.visibility = View.GONE
-                    imgAddImage.setImageURI(it.toUri())
-                    imgAddImage.visibility = View.VISIBLE
+                    showImage(it)
                 }
             }
 
@@ -148,6 +171,14 @@ class AddWarrantyFragment : Fragment() {
                 }
                 showDatePicker(model.expirationDate, onPositiveClick, dateConstraints)
             }
+        }
+    }
+
+    private fun showImage(file: File) {
+        binding.apply {
+            this.tvAddImageName.visibility = View.GONE
+            this.imgAddImage.setImageURI(file.toUri())
+            this.imgAddImage.visibility = View.VISIBLE
         }
     }
 

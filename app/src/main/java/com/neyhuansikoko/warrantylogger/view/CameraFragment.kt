@@ -1,19 +1,18 @@
 package com.neyhuansikoko.warrantylogger.view
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.ScaleGestureDetector
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
-import androidx.camera.core.Preview
+import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.core.net.toFile
@@ -21,6 +20,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.neyhuansikoko.warrantylogger.*
+import com.neyhuansikoko.warrantylogger.R
 import com.neyhuansikoko.warrantylogger.databinding.FragmentCameraBinding
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
 import java.io.File
@@ -40,6 +40,7 @@ class CameraFragment : Fragment() {
     private val sharedViewModel: WarrantyViewModel by activityViewModels()
 
     private var imageCapture: ImageCapture? = null
+    private var camera: Camera? = null
     private lateinit var cameraExecutor: ExecutorService
 
     private val requestMultiplePermissions = registerForActivityResult(
@@ -66,6 +67,7 @@ class CameraFragment : Fragment() {
         return binding.root
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -80,6 +82,21 @@ class CameraFragment : Fragment() {
         binding.ivBtnCameraClick.setOnClickListener { takePhoto() }
 
         cameraExecutor = Executors.newSingleThreadExecutor()
+
+        val listener = object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            override fun onScale(detector: ScaleGestureDetector): Boolean {
+                val scale = camera!!.cameraInfo.zoomState.value!!.zoomRatio * detector.scaleFactor
+                camera!!.cameraControl.setZoomRatio(scale)
+                return true
+            }
+        }
+
+        val scaleGestureDetector = ScaleGestureDetector(context, listener)
+
+        binding.viewFinder.setOnTouchListener { _, event ->
+            scaleGestureDetector.onTouchEvent(event)
+            return@setOnTouchListener true
+        }
     }
 
     private fun takePhoto() {
@@ -123,7 +140,7 @@ class CameraFragment : Fragment() {
         cameraProviderFuture.addListener({
             // Used to bind the lifecycle of cameras to the lifecycle owner
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
-
+            
             // Preview
             val preview = Preview.Builder()
                 .build()
@@ -140,7 +157,7 @@ class CameraFragment : Fragment() {
                 cameraProvider.unbindAll()
 
                 // Bind use cases to camera
-                cameraProvider.bindToLifecycle(
+                camera = cameraProvider.bindToLifecycle(
                     this, cameraSelector, preview, imageCapture)
 
             } catch(exc: Exception) {

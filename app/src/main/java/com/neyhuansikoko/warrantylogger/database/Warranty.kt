@@ -5,8 +5,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.neyhuansikoko.warrantylogger.*
-import java.util.*
-import kotlin.math.ceil
 
 @Entity(tableName = "warranty")
 data class Warranty(
@@ -21,19 +19,13 @@ data class Warranty(
 )
 
 fun Warranty.getRemainingTime(): String {
-    val currentDay = System.currentTimeMillis()
-    val remainingDays = (ceil(expirationDate.toDouble() / DAY_MILLIS) - currentDay.floorDiv(DAY_MILLIS)).toInt()
-    val remainingMonths = (ceil(expirationDate.toDouble() / MONTH_MILLIS) - ceil(currentDay.toDouble() / MONTH_MILLIS)).toInt()
-    val remainingYear = (ceil(expirationDate.toDouble() / YEAR_MILLIS) - ceil(currentDay.toDouble() / YEAR_MILLIS)).toInt()
-
-    return if (remainingDays < 1) {
-        "expired"
-    } else if (remainingDays < 30) {
-        "$remainingDays ${if (remainingDays > 1) "days" else "day"}"
-    } else if (remainingMonths < 12) {
-        "$remainingMonths ${if (remainingMonths > 1) "months" else "month"}"
+    val days = getDaysFromDateMillis(expirationDate).toInt()
+    return if (days > 1) {
+        "$days days"
+    } else if (days == 1) {
+        "$days day"
     } else {
-        "$remainingYear ${if (remainingYear > 1) "years" else "year"}"
+        "expired"
     }
 }
 

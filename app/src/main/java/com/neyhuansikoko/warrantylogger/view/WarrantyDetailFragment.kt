@@ -2,17 +2,12 @@ package com.neyhuansikoko.warrantylogger.view
 
 import android.os.Bundle
 import android.view.*
-import android.widget.Adapter
 import android.widget.ArrayAdapter
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.net.toUri
 import androidx.core.view.MenuProvider
-import androidx.core.view.get
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
@@ -23,9 +18,7 @@ import com.neyhuansikoko.warrantylogger.database.isValid
 import com.neyhuansikoko.warrantylogger.databinding.FragmentWarrantyDetailBinding
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
 import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import java.util.*
 
 class WarrantyDetailFragment : Fragment() {
 
@@ -42,7 +35,7 @@ class WarrantyDetailFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
 
         _binding = FragmentWarrantyDetailBinding.inflate(inflater, container, false)
         return binding.root
@@ -87,7 +80,7 @@ class WarrantyDetailFragment : Fragment() {
             arrayAdapter = ArrayAdapter(requireContext(), R.layout.list_item_unit, resources.getStringArray(R.array.time_unit_array))
             actvDetailUnit.setAdapter(arrayAdapter)
 
-            if (getDaysToDate(warranty.expirationDate) > 1) {
+            if (getDaysFromDateMillis(warranty.expirationDate) > 1) {
                 switchDetailReminder.isEnabled = true
                 btnDetailCustomizeReminder.isEnabled = true
             }

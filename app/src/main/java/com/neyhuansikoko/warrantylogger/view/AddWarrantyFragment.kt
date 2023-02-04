@@ -35,7 +35,6 @@ class AddWarrantyFragment : Fragment() {
 
     private val inputWarrantyName: String get() = binding.tilEtAddWarrantyName.text.toString()
     private val inputNote: String get() = binding.tilEtAddNote.text.toString()
-    private val inputPurchaseDate: String get() = binding.tilEtAddPurchaseDate.text.toString()
     private val inputDuration: String get() = binding.tilEtAddDuration.text.toString()
     private val inputUnit: String get() = binding.actvAddUnit.text.toString()
     private val inputExpirationDate: String get() = binding.tilEtAddExpirationDate.text.toString()
@@ -135,6 +134,10 @@ class AddWarrantyFragment : Fragment() {
             }
 
             btnAddSave.setOnClickListener {
+                log("isWarrantyNameBlank: ${inputWarrantyName.isBlank()}")
+                log("checkedIdMatch: ${tgCheckedId == R.id.btn_tg_add_expiration_date}")
+                log("purchaseDate: $")
+                log("expirationDate: $inputExpirationDate")
                 if (isInputValid()) {
                     model.warrantyName = inputWarrantyName
                     model.note = inputNote
@@ -179,7 +182,7 @@ class AddWarrantyFragment : Fragment() {
 
             tilEtAddExpirationDate.setOnClickListener {
                 val dateConstraints = CalendarConstraints.Builder()
-                    .setValidator(DateValidatorPointForward.from(DEFAULT_DATE_SELECTION))
+                    .setValidator(DateValidatorPointForward.from(GregorianCalendar.getInstance().timeInMillis))
                     .build()
                 val onPositiveClick: (Long) -> Unit = { date ->
                     model.expirationDate = date
@@ -223,7 +226,7 @@ class AddWarrantyFragment : Fragment() {
     private fun isInputValid(): Boolean {
         setError()
         return inputWarrantyName.isNotBlank() &&
-                ((tgCheckedId == R.id.btn_tg_add_expiration_date && inputExpirationDate.isNotBlank() && inputExpirationDate > inputPurchaseDate) ||
+                ((tgCheckedId == R.id.btn_tg_add_expiration_date && inputExpirationDate.isNotBlank() && model.expirationDate > model.purchaseDate) ||
                         tgCheckedId == R.id.btn_tg_add_duration && inputDuration.isNotBlank())
     }
 
@@ -258,9 +261,9 @@ class AddWarrantyFragment : Fragment() {
                 .setSelection(
                     defaultDate.takeIf {
                         it > DEFAULT_MODEL.expirationDate
-                    } ?: DEFAULT_DATE_SELECTION.takeIf {
+                    } ?: getDefaultDateSelection().takeIf {
                         constraints != EMPTY_DATE_CONSTRAINT
-                    } ?: (MaterialDatePicker.todayInUtcMilliseconds())
+                    } ?: (GregorianCalendar.getInstance().timeInMillis)
                 )
                 .build()
         datePicker.apply {

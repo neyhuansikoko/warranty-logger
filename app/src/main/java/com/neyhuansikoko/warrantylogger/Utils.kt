@@ -9,26 +9,30 @@ import android.view.inputmethod.InputMethodManager
 import androidx.exifinterface.media.ExifInterface
 import androidx.lifecycle.MutableLiveData
 import com.google.android.material.datepicker.CalendarConstraints
-import com.google.android.material.datepicker.MaterialDatePicker
 import com.neyhuansikoko.warrantylogger.database.Warranty
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import java.util.*
-import kotlin.math.ceil
 
 fun log(message: String) {
     Log.d("Test", message)
 }
 
-val DEFAULT_DATE_SELECTION: Long get() =  MaterialDatePicker.todayInUtcMilliseconds() + DAY_MILLIS
+fun getDefaultDateSelection(): Long {
+    val calendar = GregorianCalendar.getInstance()
+    calendar.add(GregorianCalendar.DAY_OF_MONTH, 1)
+    return calendar.timeInMillis
+}
 
 val EMPTY_DATE_CONSTRAINT: CalendarConstraints = CalendarConstraints.Builder().build()
 
 private val _DEFAULT_MODEL = Warranty(
     warrantyName = "",
-    purchaseDate = MaterialDatePicker.todayInUtcMilliseconds(),
+    purchaseDate = GregorianCalendar.getInstance().timeInMillis,
     expirationDate = Long.MIN_VALUE,
     image = null
 )
@@ -91,18 +95,16 @@ fun closeSoftKeyboard(view: View, context: Context) {
     inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
 }
 
-fun getDaysToDate(date: Long): Long {
-    val currentDate = Calendar.getInstance().timeInMillis.floorDiv(DAY_MILLIS)
-    val expirationDate = ceil(date.toDouble() / DAY_MILLIS).toLong()
-
-    return expirationDate - currentDate
+fun getDaysFromDateMillis(dateMillis: Long): Long {
+    return ChronoUnit.DAYS.between(LocalDate.now(), localDateFromMillis(dateMillis))
 }
 
-fun inputToDays(duration: Long, timeUnit: String): Long {
-    return when (timeUnit) {
-        "Days" -> duration
-        "Weeks" -> duration * 7
-        "Months" -> duration * 30
-        else -> duration * 365
-    }
+fun localDateFromMillis(millis: Long): LocalDate {
+    val calendar = GregorianCalendar.getInstance()
+    calendar.timeInMillis = millis
+    return LocalDate.of(
+        calendar.get(GregorianCalendar.YEAR),
+        calendar.get(GregorianCalendar.MONTH) + 1, //Calendar month start at 0 expect start at 1
+        calendar.get(GregorianCalendar.DAY_OF_MONTH)
+    )
 }

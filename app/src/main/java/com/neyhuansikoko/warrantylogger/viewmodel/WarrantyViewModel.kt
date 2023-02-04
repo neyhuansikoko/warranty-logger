@@ -11,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.util.GregorianCalendar
 import java.util.concurrent.TimeUnit
 
 class WarrantyViewModel(application: Application): AndroidViewModel(application) {
@@ -171,12 +172,20 @@ class WarrantyViewModel(application: Application): AndroidViewModel(application)
 
     internal fun scheduleReminder(warranty: Warranty, duration: String , timeUnit: String) : Long {
         val data = Data.Builder().putString(ExpirationNotifierWorker.nameKey, warranty.warrantyName).build()
+        val intDuration = duration.toInt()
+        val calendar = GregorianCalendar.getInstance()
+        calendar.timeInMillis = warranty.expirationDate
+        when (timeUnit) {
+            "Days" -> calendar.add(GregorianCalendar.DAY_OF_MONTH, -intDuration)
+            "Weeks" -> calendar.add(GregorianCalendar.DAY_OF_MONTH, -intDuration * 7)
+            "Months" -> calendar.add(GregorianCalendar.MONTH, -intDuration)
+            "Years" -> calendar.add(GregorianCalendar.YEAR, -intDuration)
+        }
+        val days = getDaysFromDateMillis(calendar.timeInMillis)
 
-        val delayTime = getDaysToDate(warranty.expirationDate) - inputToDays(duration.toLong(), timeUnit)
-
-        if (delayTime > 0) {
+        if (days > 0) {
             val request = OneTimeWorkRequestBuilder<ExpirationNotifierWorker>()
-                .setInitialDelay(delayTime, TimeUnit.DAYS)
+                .setInitialDelay(days, TimeUnit.DAYS)
                 .setInputData(data)
                 .build()
 
@@ -188,7 +197,7 @@ class WarrantyViewModel(application: Application): AndroidViewModel(application)
             )
         }
 
-        return delayTime
+        return days
     }
 
     internal suspend fun doesWorkExist(): Boolean {
@@ -215,7 +224,16 @@ class WarrantyViewModel(application: Application): AndroidViewModel(application)
 
     fun calculateExpirationDate(duration: String, timeUnit: String): Long {
         inputModel.apply {
-            return inputModel.purchaseDate + inputToDays(duration.toLong(), timeUnit) * DAY_MILLIS
+            val intDuration = duration.toInt()
+            val calendar = GregorianCalendar.getInstance()
+            calendar.timeInMillis = purchaseDate
+            when (timeUnit) {
+                "Days" -> calendar.add(GregorianCalendar.DAY_OF_MONTH, intDuration)
+                "Weeks" -> calendar.add(GregorianCalendar.DAY_OF_MONTH, intDuration * 7)
+                "Months" -> calendar.add(GregorianCalendar.MONTH, intDuration)
+                "Years" -> calendar.add(GregorianCalendar.YEAR, intDuration)
+            }
+            return calendar.timeInMillis
         }
     }
 

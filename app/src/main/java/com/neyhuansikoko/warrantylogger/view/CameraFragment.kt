@@ -21,6 +21,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.neyhuansikoko.warrantylogger.*
 import com.neyhuansikoko.warrantylogger.R
+import com.neyhuansikoko.warrantylogger.database.isValid
 import com.neyhuansikoko.warrantylogger.databinding.FragmentCameraBinding
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
 import java.io.File
@@ -169,7 +170,7 @@ class CameraFragment : Fragment() {
 
     private fun navigateToAddWarranty() {
         val action = CameraFragmentDirections.actionCameraFragmentToAddWarrantyFragment(
-            title = if (sharedViewModel.inputModel.id > DEFAULT_MODEL.id) {
+            title = if (sharedViewModel.inputModel.isValid()) {
                 getString(R.string.edit_warranty_title_text)
             } else {
                 getString(R.string.add_warranty_title_text)

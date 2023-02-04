@@ -16,10 +16,8 @@
     <string name="warranty_name_label_text">Warranty Name</string>
     <string name="expiration_date_label_text">Expiration Date</string>
     <string name="image_label_text">Image</string>
-    <string name="warranty_name_error_text">Warranty name cannot be empty</string>
-    <string name="expiration_date_error_text">Warranty must have expiration date</string>
-    <string name="purchase_date_error_text">Warranty must have purchase date</string>
-    <string name="duration_error_text">Duration can not be empty</string>
+    <string name="warranty_name_error_text">Warranty name is required</string>
+    <string name="duration_error_text">Duration is required</string>
     <string name="delete_message_text">Are you sure you want to delete?</string>
     <string name="cancel">Cancel</string>
     <string name="yes">Yes</string>
@@ -50,7 +48,7 @@
     <string name="modified_last_at_label_text">Modified Last At</string>
     <string name="purchase_date_label_text">Purchase Date</string>
     <string name="enter_purchase_date_text">Enter Purchase Date</string>
-    <string name="purchase_expiration_date_error_text">Purchase date cannot be set beyond or equal with expiration date</string>
+    <string name="purchase_expiration_date_error_text">Expiration date is required</string>
     <string name="note_label_text">Note</string>
     <string name="enter_warranty_note_text">Enter Warranty Note</string>
     <string name="helper_text">*Required</string>

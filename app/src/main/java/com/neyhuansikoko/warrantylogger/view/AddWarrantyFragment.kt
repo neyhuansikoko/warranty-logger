@@ -110,13 +110,10 @@ class AddWarrantyFragment : Fragment() {
                 }
             }
 
-            tilEtAddExpirationDate.setText(if (model.expirationDate > DEFAULT_MODEL.expirationDate) {
-                formatDateMillis(model.expirationDate)
-            } else {
-                getString(R.string.empty)
-            })
-
             if (model.isValid()) {
+                tilEtAddDuration.setText(getDaysFromDateMillis(model.expirationDate).toString())
+                tilEtAddExpirationDate.setText(formatDateMillis(model.expirationDate))
+
                 btnAddDelete.setOnClickListener {
                     showConfirmationDialog()
                 }
@@ -134,10 +131,6 @@ class AddWarrantyFragment : Fragment() {
             }
 
             btnAddSave.setOnClickListener {
-                log("isWarrantyNameBlank: ${inputWarrantyName.isBlank()}")
-                log("checkedIdMatch: ${tgCheckedId == R.id.btn_tg_add_expiration_date}")
-                log("purchaseDate: $")
-                log("expirationDate: $inputExpirationDate")
                 if (isInputValid()) {
                     model.warrantyName = inputWarrantyName
                     model.note = inputNote
@@ -182,7 +175,7 @@ class AddWarrantyFragment : Fragment() {
 
             tilEtAddExpirationDate.setOnClickListener {
                 val dateConstraints = CalendarConstraints.Builder()
-                    .setValidator(DateValidatorPointForward.from(GregorianCalendar.getInstance().timeInMillis))
+                    .setValidator(DateValidatorPointForward.from(nowMillis))
                     .build()
                 val onPositiveClick: (Long) -> Unit = { date ->
                     model.expirationDate = date
@@ -232,19 +225,18 @@ class AddWarrantyFragment : Fragment() {
 
     private fun setError() {
         binding.apply {
-            tilEtAddWarrantyName.error = null
-            tilEtAddPurchaseDate.error = null
-            tilEtAddDuration.error = null
+            tilAddWarrantyName.error = null
+            tilAddDuration.error = null
             tilAddExpirationDate.error = null
 
             if (inputWarrantyName.isBlank()) {
-                tilEtAddWarrantyName.error = getString(R.string.warranty_name_error_text)
+                tilAddWarrantyName.error = getString(R.string.warranty_name_error_text)
             }
 
             if (tgCheckedId == R.id.btn_tg_add_duration && inputDuration.isBlank()) {
-                tilEtAddDuration.error = getString(R.string.duration_error_text)
+                tilAddDuration.error = getString(R.string.duration_error_text)
             } else if (tgCheckedId == R.id.btn_tg_add_expiration_date && inputExpirationDate.isBlank()) {
-                tilEtAddExpirationDate.error = getString(R.string.purchase_expiration_date_error_text)
+                tilAddExpirationDate.error = getString(R.string.purchase_expiration_date_error_text)
             }
         }
     }
@@ -260,10 +252,10 @@ class AddWarrantyFragment : Fragment() {
                 .setTitleText("Select date")
                 .setSelection(
                     defaultDate.takeIf {
-                        it > DEFAULT_MODEL.expirationDate
+                        model.isValid()
                     } ?: getDefaultDateSelection().takeIf {
                         constraints != EMPTY_DATE_CONSTRAINT
-                    } ?: (GregorianCalendar.getInstance().timeInMillis)
+                    } ?: (nowMillis)
                 )
                 .build()
         datePicker.apply {

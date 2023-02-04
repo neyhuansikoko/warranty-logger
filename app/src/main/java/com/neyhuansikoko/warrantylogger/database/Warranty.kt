@@ -30,7 +30,7 @@ fun Warranty.getRemainingTime(): String {
 }
 
 fun Warranty.isValid(): Boolean {
-    return this.id > DEFAULT_MODEL.id
+    return this.id > 0
 }
 
 //Used to delete stored image file

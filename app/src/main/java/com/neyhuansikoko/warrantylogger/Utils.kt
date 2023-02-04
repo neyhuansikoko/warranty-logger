@@ -22,6 +22,8 @@ fun log(message: String) {
     Log.d("Test", message)
 }
 
+val nowMillis get() = GregorianCalendar.getInstance().timeInMillis
+
 fun getDefaultDateSelection(): Long {
     val calendar = GregorianCalendar.getInstance()
     calendar.add(GregorianCalendar.DAY_OF_MONTH, 1)
@@ -32,11 +34,13 @@ val EMPTY_DATE_CONSTRAINT: CalendarConstraints = CalendarConstraints.Builder().b
 
 private val _DEFAULT_MODEL = Warranty(
     warrantyName = "",
-    purchaseDate = GregorianCalendar.getInstance().timeInMillis,
+    purchaseDate = Long.MIN_VALUE,
     expirationDate = Long.MIN_VALUE,
     image = null
 )
-val DEFAULT_MODEL get() = _DEFAULT_MODEL.copy()
+val DEFAULT_MODEL get() = _DEFAULT_MODEL.copy(
+    purchaseDate = nowMillis
+)
 
 fun formatDateMillis(dateMillis: Long): String = SimpleDateFormat("dd/MM/yyyy").format(dateMillis)
 fun formatDateTimeMillis(dateMillis: Long): String = SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(dateMillis)

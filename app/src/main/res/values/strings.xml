@@ -56,4 +56,7 @@
     <string name="pick_image_text">Pick Image</string>
     <string name="btn_tg_duration_text">Duration</string>
     <string name="btn_tg_deadline_text">Deadline</string>
+    <string name="backup_and_restore_text"><![CDATA[Backup & Restore]]></string>
+    <string name="backup_text">Backup Data</string>
+    <string name="restore_text">Restore Data</string>
 </resources>

@@ -17,6 +17,9 @@
         <action
             android:id="@+id/action_warrantyListFragment_to_addWarrantyFragment"
             app:destination="@id/addWarrantyFragment" />
+        <action
+            android:id="@+id/action_warrantyListFragment_to_backupFragment"
+            app:destination="@id/backupFragment" />
     </fragment>
     <fragment
         android:id="@+id/warrantyDetailFragment"
@@ -61,4 +64,9 @@
             app:popUpTo="@id/addWarrantyFragment"
             app:popUpToInclusive="true" />
     </fragment>
+    <fragment
+        android:id="@+id/backupFragment"
+        android:name="com.neyhuansikoko.warrantylogger.view.BackupFragment"
+        android:label="Backup &amp; Restore"
+        tools:layout="@layout/fragment_backup" />
 </navigation>

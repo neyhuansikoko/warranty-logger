@@ -4,19 +4,22 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="16dp">
+    android:layout_gravity="center_vertical"
+    android:background="?attr/selectableItemBackground">
 
     <CheckBox
         android:id="@+id/cb_item_delete"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
         android:checked="false"
         android:minWidth="0dp"
         android:minHeight="0dp"
+        android:paddingStart="8dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="16dp"
         app:layout_constraintBottom_toBottomOf="@+id/tv_item_warranty_name"
         app:layout_constraintEnd_toStartOf="@+id/tv_item_warranty_name"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/tv_item_warranty_name"
         app:useMaterialThemeColors="true" />
@@ -24,42 +27,44 @@
     <TextView
         android:id="@+id/tv_item_warranty_name"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:gravity="start|center_vertical"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
         android:singleLine="true"
-        app:layout_constraintBottom_toBottomOf="@+id/tv_item_expiration_date"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/tv_item_expiration_date"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintHorizontal_weight="1.5"
         app:layout_constraintStart_toEndOf="@+id/cb_item_delete"
-        app:layout_constraintTop_toTopOf="@+id/tv_item_expiration_date"
+        app:layout_constraintTop_toTopOf="parent"
         tools:text="Refrigerator Warranty" />
 
     <TextView
         android:id="@+id/tv_item_status"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal|end"
+        android:layout_height="0dp"
+        android:layout_marginEnd="8dp"
+        android:gravity="center_vertical|end"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintHorizontal_weight="1"
         app:layout_constraintStart_toEndOf="@+id/tv_item_expiration_date"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0"
         tools:text="active" />
 
     <TextView
         android:id="@+id/tv_item_expiration_date"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        app:layout_constraintBottom_toBottomOf="@+id/tv_item_status"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:padding="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/tv_item_status"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintHorizontal_weight="1"
         app:layout_constraintStart_toEndOf="@+id/tv_item_warranty_name"
-        app:layout_constraintTop_toTopOf="@+id/tv_item_status"
-        app:layout_constraintVertical_bias="0.0"
+        app:layout_constraintTop_toTopOf="parent"
         tools:text="17/08/2030" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

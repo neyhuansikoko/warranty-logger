@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.net.toUri
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -110,10 +111,14 @@ class AddWarrantyFragment : Fragment() {
                 }
             }
 
-            if (model.isValid()) {
-                tilEtAddDuration.setText(getDaysFromDateMillis(model.expirationDate).toString())
+            if (model.expirationDate > DEFAULT_MODEL.expirationDate) {
+                val durationPair = sharedViewModel.getDuration()
+                tilEtAddDuration.setText(durationPair.first)
+                actvAddUnit.setText(durationPair.second, false)
                 tilEtAddExpirationDate.setText(formatDateMillis(model.expirationDate))
+            }
 
+            if (model.isValid()) {
                 btnAddDelete.setOnClickListener {
                     showConfirmationDialog()
                 }
@@ -167,10 +172,18 @@ class AddWarrantyFragment : Fragment() {
             tilEtAddPurchaseDate.setOnClickListener {
                 val onPositiveClick: (Long) -> Unit = { date ->
                     model.purchaseDate = date
-                    binding.tilEtAddPurchaseDate.setText(formatDateMillis(model.purchaseDate))
+                    tilEtAddPurchaseDate.setText(formatDateMillis(model.purchaseDate))
                 }
 
                 showDatePicker(model.purchaseDate, onPositiveClick)
+            }
+
+            tilEtAddDuration.doAfterTextChanged {
+                model.expirationDate = sharedViewModel.calculateExpirationDate(inputDuration, inputUnit)
+            }
+
+            actvAddUnit.doAfterTextChanged {
+                model.expirationDate = sharedViewModel.calculateExpirationDate(inputDuration, inputUnit)
             }
 
             tilEtAddExpirationDate.setOnClickListener {
@@ -179,7 +192,7 @@ class AddWarrantyFragment : Fragment() {
                     .build()
                 val onPositiveClick: (Long) -> Unit = { date ->
                     model.expirationDate = date
-                    binding.tilEtAddExpirationDate.setText(formatDateMillis(model.expirationDate))
+                    tilEtAddExpirationDate.setText(formatDateMillis(model.expirationDate))
                 }
                 showDatePicker(model.expirationDate, onPositiveClick, dateConstraints)
             }

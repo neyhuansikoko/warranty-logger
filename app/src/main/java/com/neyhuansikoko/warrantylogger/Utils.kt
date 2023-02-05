@@ -42,8 +42,8 @@ val DEFAULT_MODEL get() = _DEFAULT_MODEL.copy(
     purchaseDate = nowMillis
 )
 
-fun formatDateMillis(dateMillis: Long): String = SimpleDateFormat("dd/MM/yyyy").format(dateMillis)
-fun formatDateTimeMillis(dateMillis: Long): String = SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(dateMillis)
+fun formatDateMillis(dateMillis: Long): String = SimpleDateFormat("dd/MM/yyyy", Locale.US).format(dateMillis)
+fun formatDateTimeMillis(dateMillis: Long): String = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.US).format(dateMillis)
 
 fun getImageFile(context: Context, image: String): File? {
     val imageDir = File(context.filesDir, IMAGE_DIR)

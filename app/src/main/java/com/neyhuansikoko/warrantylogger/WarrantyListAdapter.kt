@@ -3,12 +3,11 @@ package com.neyhuansikoko.warrantylogger
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.CheckBox
-import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.neyhuansikoko.warrantylogger.database.Warranty
-import com.neyhuansikoko.warrantylogger.database.getRemainingTime
+import com.neyhuansikoko.warrantylogger.database.getRemainingDays
 import com.neyhuansikoko.warrantylogger.databinding.ListItemWarrantyBinding
 
 class WarrantyListAdapter(
@@ -24,7 +23,7 @@ class WarrantyListAdapter(
             binding.apply {
                 tvItemWarrantyName.text = warranty.warrantyName
                 tvItemExpirationDate.text = formatDateMillis(warranty.expirationDate)
-                tvItemStatus.text = warranty.getRemainingTime()
+                tvItemStatus.text = warranty.getRemainingDays()
             }
         }
     }

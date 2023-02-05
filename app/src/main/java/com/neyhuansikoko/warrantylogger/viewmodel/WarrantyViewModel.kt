@@ -11,6 +11,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.time.Period
+import java.time.temporal.ChronoUnit
 import java.util.GregorianCalendar
 import java.util.concurrent.TimeUnit
 
@@ -224,7 +226,7 @@ class WarrantyViewModel(application: Application): AndroidViewModel(application)
 
     fun calculateExpirationDate(duration: String, timeUnit: String): Long {
         inputModel.apply {
-            val intDuration = duration.toInt()
+            val intDuration = (duration.takeIf { it.isNotBlank() } ?: "0").toInt()
             val calendar = GregorianCalendar.getInstance()
             calendar.timeInMillis = purchaseDate
             when (timeUnit) {
@@ -240,5 +242,25 @@ class WarrantyViewModel(application: Application): AndroidViewModel(application)
     override fun onCleared() {
         super.onCleared()
         clearCache(getApplication())
+    }
+
+    fun getDuration(): Pair<String, String> {
+        inputModel.apply {
+            val startDate = localDateFromMillis(purchaseDate)
+            val endDate = localDateFromMillis(expirationDate)
+            val period = Period.between(startDate, endDate)
+            return if (period.years > 0 && period.months == 0 && period.days == 0) {
+                Pair(period.years.toString(), "Years")
+            } else if (period.years == 0 && period.months > 0 && period.days == 0) {
+                Pair(period.months.toString(), "Months")
+            } else {
+                val days = ChronoUnit.DAYS.between(startDate, endDate).toInt()
+                if (days % 7 == 0) {
+                    Pair((days / 7).toString(), "Weeks")
+                } else {
+                    Pair(days.toString(), "Days")
+                }
+            }
+        }
     }
 }

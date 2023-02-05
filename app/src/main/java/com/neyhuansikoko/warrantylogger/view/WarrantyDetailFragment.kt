@@ -13,7 +13,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.neyhuansikoko.warrantylogger.*
 import com.neyhuansikoko.warrantylogger.database.Warranty
-import com.neyhuansikoko.warrantylogger.database.getRemainingTime
+import com.neyhuansikoko.warrantylogger.database.getRemainingDate
 import com.neyhuansikoko.warrantylogger.database.isValid
 import com.neyhuansikoko.warrantylogger.databinding.FragmentWarrantyDetailBinding
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
@@ -66,7 +66,7 @@ class WarrantyDetailFragment : Fragment() {
                 getString(R.string.no_information_text)
             }
             tvDetailExpirationDate.text = formatDateMillis(warranty.expirationDate)
-            tvDetailRemainingTime.text = warranty.getRemainingTime()
+            tvDetailRemainingTime.text = warranty.getRemainingDate()
 
             //Set image and image name, if it exist
             warranty.image?.let { image ->

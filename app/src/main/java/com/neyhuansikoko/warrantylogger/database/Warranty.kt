@@ -5,6 +5,8 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.neyhuansikoko.warrantylogger.*
+import java.time.LocalDate
+import java.time.Period
 
 @Entity(tableName = "warranty")
 data class Warranty(
@@ -18,7 +20,7 @@ data class Warranty(
     @ColumnInfo(name = "image") var image: String?
 )
 
-fun Warranty.getRemainingTime(): String {
+fun Warranty.getRemainingDays(): String {
     val days = getDaysFromDateMillis(expirationDate).toInt()
     return if (days > 1) {
         "$days days"
@@ -27,6 +29,24 @@ fun Warranty.getRemainingTime(): String {
     } else {
         "expired"
     }
+}
+
+fun Warranty.getRemainingDate(): String {
+    val period = Period.between(LocalDate.now(), localDateFromMillis(expirationDate))
+    val stringBuilder = StringBuilder()
+    if (period.years > 0) {
+        stringBuilder.append("${period.years} ${if(period.years > 1) "years" else "year"} ")
+    }
+    if (period.months > 0) {
+        stringBuilder.append("${period.months} ${if(period.months > 1) "months" else "month"} ")
+    }
+    if (period.days > 0) {
+        stringBuilder.append("${period.days} ${if(period.days > 1) "days" else "day"}")
+    }
+    if (period.isNegative) {
+        stringBuilder.append("expired")
+    }
+    return stringBuilder.toString()
 }
 
 fun Warranty.isValid(): Boolean {

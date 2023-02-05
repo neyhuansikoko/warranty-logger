@@ -2,6 +2,8 @@ package com.neyhuansikoko.warrantylogger.view
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -32,7 +34,11 @@ import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
+const val FLASH_MODE_DEFAULT = ImageCapture.FLASH_MODE_OFF
+
 class CameraFragment : Fragment() {
+
+    private var sharedPreferences: SharedPreferences? = null
 
     private var _binding: FragmentCameraBinding? = null
 
@@ -44,7 +50,7 @@ class CameraFragment : Fragment() {
 
     private var imageCapture: ImageCapture? = null
     private var camera: Camera? = null
-    private var flashMode: Int = ImageCapture.FLASH_MODE_OFF
+    private var flashMode: Int = FLASH_MODE_DEFAULT
     private lateinit var cameraExecutor: ExecutorService
     private lateinit var cameraProvider: ProcessCameraProvider
     private lateinit var preview: Preview
@@ -78,6 +84,9 @@ class CameraFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        sharedPreferences = activity?.getPreferences(Context.MODE_PRIVATE)
+        flashMode = sharedPreferences?.getInt(FLASH_MODE_KEY, FLASH_MODE_DEFAULT) ?: FLASH_MODE_DEFAULT
+
         // Request camera permissions
         if (allPermissionsGranted()) {
             startCamera()
@@ -90,22 +99,40 @@ class CameraFragment : Fragment() {
             binding.ivBtnCameraClick.startAnimation(AnimationUtils.loadAnimation(requireContext(), R.anim.anim_rotate))
             takePhoto()
         }
-        binding.ivBtnCameraFlash.setOnClickListener {
+        binding.ivBtnCameraFlash.apply {
             when (flashMode) {
                 ImageCapture.FLASH_MODE_OFF -> {
-                    flashMode = ImageCapture.FLASH_MODE_ON
-                    binding.ivBtnCameraFlash.setImageDrawable(ResourcesCompat.getDrawable(resources, R.drawable.ic_flash_on, null))
+                    this.setImageDrawable(ResourcesCompat.getDrawable(resources, R.drawable.ic_flash_off, null))
                 }
                 ImageCapture.FLASH_MODE_ON -> {
-                    flashMode = ImageCapture.FLASH_MODE_AUTO
-                    binding.ivBtnCameraFlash.setImageDrawable(ResourcesCompat.getDrawable(resources, R.drawable.ic_flash_auto, null))
+                    this.setImageDrawable(ResourcesCompat.getDrawable(resources, R.drawable.ic_flash_on, null))
                 }
                 ImageCapture.FLASH_MODE_AUTO -> {
-                    flashMode = ImageCapture.FLASH_MODE_OFF
-                    binding.ivBtnCameraFlash.setImageDrawable(ResourcesCompat.getDrawable(resources, R.drawable.ic_flash_off, null))
+                    this.setImageDrawable(ResourcesCompat.getDrawable(resources, R.drawable.ic_flash_auto, null))
                 }
             }
-            bindCameraUseCases()
+            this.setOnClickListener {
+                when (flashMode) {
+                    ImageCapture.FLASH_MODE_OFF -> {
+                        flashMode = ImageCapture.FLASH_MODE_ON
+                        binding.ivBtnCameraFlash.setImageDrawable(ResourcesCompat.getDrawable(resources, R.drawable.ic_flash_on, null))
+                    }
+                    ImageCapture.FLASH_MODE_ON -> {
+                        flashMode = ImageCapture.FLASH_MODE_AUTO
+                        binding.ivBtnCameraFlash.setImageDrawable(ResourcesCompat.getDrawable(resources, R.drawable.ic_flash_auto, null))
+                    }
+                    ImageCapture.FLASH_MODE_AUTO -> {
+                        flashMode = ImageCapture.FLASH_MODE_OFF
+                        binding.ivBtnCameraFlash.setImageDrawable(ResourcesCompat.getDrawable(resources, R.drawable.ic_flash_off, null))
+                    }
+                }
+                sharedPreferences?.edit()?.let {
+                    log("Test")
+                    it.putInt(FLASH_MODE_KEY, flashMode)
+                    it.apply()
+                }
+                bindCameraUseCases()
+            }
         }
 
         cameraExecutor = Executors.newSingleThreadExecutor()

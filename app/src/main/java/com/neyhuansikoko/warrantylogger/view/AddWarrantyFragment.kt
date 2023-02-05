@@ -104,8 +104,8 @@ class AddWarrantyFragment : Fragment() {
                             layoutAddDuration.visibility = View.VISIBLE
                         }
                         R.id.btn_tg_add_expiration_date -> {
-                            tilAddExpirationDate.visibility = View.VISIBLE
                             layoutAddDuration.visibility = View.GONE
+                            tilAddExpirationDate.visibility = View.VISIBLE
                         }
                     }
                 }

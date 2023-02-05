@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.ScaleGestureDetector
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.*
@@ -85,7 +86,10 @@ class CameraFragment : Fragment() {
         }
 
         // Set up the listeners for take photo and video capture buttons
-        binding.ivBtnCameraClick.setOnClickListener { takePhoto() }
+        binding.ivBtnCameraClick.setOnClickListener {
+            binding.ivBtnCameraClick.startAnimation(AnimationUtils.loadAnimation(requireContext(), R.anim.anim_rotate))
+            takePhoto()
+        }
         binding.ivBtnCameraFlash.setOnClickListener {
             when (flashMode) {
                 ImageCapture.FLASH_MODE_OFF -> {

@@ -15,6 +15,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.net.toFile
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -42,7 +43,11 @@ class CameraFragment : Fragment() {
 
     private var imageCapture: ImageCapture? = null
     private var camera: Camera? = null
+    private var flashMode: Int = ImageCapture.FLASH_MODE_OFF
     private lateinit var cameraExecutor: ExecutorService
+    private lateinit var cameraProvider: ProcessCameraProvider
+    private lateinit var preview: Preview
+    private lateinit var cameraSelector: CameraSelector
 
     private val requestMultiplePermissions = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -81,6 +86,23 @@ class CameraFragment : Fragment() {
 
         // Set up the listeners for take photo and video capture buttons
         binding.ivBtnCameraClick.setOnClickListener { takePhoto() }
+        binding.ivBtnCameraFlash.setOnClickListener {
+            when (flashMode) {
+                ImageCapture.FLASH_MODE_OFF -> {
+                    flashMode = ImageCapture.FLASH_MODE_ON
+                    binding.ivBtnCameraFlash.setImageDrawable(ResourcesCompat.getDrawable(resources, R.drawable.ic_flash_on, null))
+                }
+                ImageCapture.FLASH_MODE_ON -> {
+                    flashMode = ImageCapture.FLASH_MODE_AUTO
+                    binding.ivBtnCameraFlash.setImageDrawable(ResourcesCompat.getDrawable(resources, R.drawable.ic_flash_auto, null))
+                }
+                ImageCapture.FLASH_MODE_AUTO -> {
+                    flashMode = ImageCapture.FLASH_MODE_OFF
+                    binding.ivBtnCameraFlash.setImageDrawable(ResourcesCompat.getDrawable(resources, R.drawable.ic_flash_off, null))
+                }
+            }
+            bindCameraUseCases()
+        }
 
         cameraExecutor = Executors.newSingleThreadExecutor()
 
@@ -140,32 +162,39 @@ class CameraFragment : Fragment() {
 
         cameraProviderFuture.addListener({
             // Used to bind the lifecycle of cameras to the lifecycle owner
-            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+            cameraProvider = cameraProviderFuture.get()
             
             // Preview
-            val preview = Preview.Builder()
+            preview = Preview.Builder()
                 .build()
                 .also {
                     it.setSurfaceProvider(binding.viewFinder.surfaceProvider)
                 }
-            imageCapture = ImageCapture.Builder().build()
 
             // Select back camera as a default
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+            cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
-            try {
-                // Unbind use cases before rebinding
-                cameraProvider.unbindAll()
-
-                // Bind use cases to camera
-                camera = cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview, imageCapture)
-
-            } catch(exc: Exception) {
-                Log.e(TAG, "Use case binding failed", exc)
-            }
+            bindCameraUseCases()
 
         }, ContextCompat.getMainExecutor(requireActivity()))
+    }
+
+    private fun bindCameraUseCases() {
+        imageCapture = ImageCapture.Builder()
+            .setFlashMode(flashMode)
+            .build()
+
+        try {
+            // Unbind use cases before rebinding
+            cameraProvider.unbindAll()
+
+            // Bind use cases to camera
+            camera = cameraProvider.bindToLifecycle(
+                this, cameraSelector, preview, imageCapture)
+
+        } catch(exc: Exception) {
+            Log.e(TAG, "Use case binding failed", exc)
+        }
     }
 
     private fun navigateToAddWarranty() {

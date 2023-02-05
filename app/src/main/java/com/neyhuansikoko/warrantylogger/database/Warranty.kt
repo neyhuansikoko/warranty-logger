@@ -34,18 +34,20 @@ fun Warranty.getRemainingDays(): String {
 fun Warranty.getRemainingDate(): String {
     val period = Period.between(LocalDate.now(), localDateFromMillis(expirationDate))
     val stringBuilder = StringBuilder()
-    if (period.years > 0) {
-        stringBuilder.append("${period.years} ${if(period.years > 1) "years" else "year"} ")
-    }
-    if (period.months > 0) {
-        stringBuilder.append("${period.months} ${if(period.months > 1) "months" else "month"} ")
-    }
-    if (period.days > 0) {
-        stringBuilder.append("${period.days} ${if(period.days > 1) "days" else "day"}")
-    }
-    if (period.isNegative) {
+    if (period.isZero || period.isNegative) {
         stringBuilder.append("expired")
+    } else {
+        if (period.years > 0) {
+            stringBuilder.append("${period.years} ${if(period.years > 1) "years" else "year"} ")
+        }
+        if (period.months > 0) {
+            stringBuilder.append("${period.months} ${if(period.months > 1) "months" else "month"} ")
+        }
+        if (period.days > 0) {
+            stringBuilder.append("${period.days} ${if(period.days > 1) "days" else "day"}")
+        }
     }
+
     return stringBuilder.toString()
 }
 

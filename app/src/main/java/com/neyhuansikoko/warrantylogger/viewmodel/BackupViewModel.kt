@@ -14,6 +14,8 @@ import kotlinx.coroutines.withContext
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream
+import java.text.SimpleDateFormat
+import java.util.*
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
@@ -152,9 +154,12 @@ class BackupViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch(Dispatchers.IO) {
             val backupZip = File(appContext.filesDir, BACKUP_ZIP)
 
+            val uniqueName = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
+                .format(System.currentTimeMillis())
+
             val externalBackup = File(
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                backupZip.name
+                "${backupZip.nameWithoutExtension}_${uniqueName}.zip"
             )
 
             backupZip.copyTo(externalBackup, true)

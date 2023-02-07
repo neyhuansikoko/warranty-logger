@@ -43,17 +43,20 @@ class AddWarrantyFragment : Fragment() {
     private val imageChooserActivity = registerForActivityResult(ActivityResultContracts.GetContent()) {imageUri ->
         //Return content URI
         if (imageUri != null) {
-            val inputStream = context?.contentResolver?.openInputStream(imageUri)
-            val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
-                .format(System.currentTimeMillis())
             runBlocking {
-                val file = withContext(Dispatchers.IO) {
-                    File.createTempFile(name, TEMP_IMAGE_SUFFIX, requireActivity().cacheDir)
+                withContext(Dispatchers.IO) {
+                    val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
+                        .format(System.currentTimeMillis())
+                    val file = File.createTempFile(name, TEMP_IMAGE_SUFFIX, requireActivity().cacheDir)
+
+                    context?.contentResolver?.openInputStream(imageUri).use { inputStream ->
+                        file.outputStream().use { outputStream ->
+                            inputStream?.copyTo(outputStream)
+                        }
+                    }
+
+                    sharedViewModel.tempImage = file.compressImage()
                 }
-                file.outputStream().use { outputStream ->
-                    inputStream?.copyTo(outputStream)
-                }
-                sharedViewModel.tempImage = file.compressImage()
                 sharedViewModel.tempImage?.let { showImage(it) }
                 binding.imgAddImage.invalidate()
             }

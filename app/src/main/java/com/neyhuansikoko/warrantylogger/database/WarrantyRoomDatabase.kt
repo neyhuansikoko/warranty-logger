@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.neyhuansikoko.warrantylogger.DATABASE_NAME
 
 @Database(entities = [Warranty::class], version = 1, exportSchema = false)
 abstract class WarrantyRoomDatabase : RoomDatabase() {
@@ -20,7 +21,7 @@ abstract class WarrantyRoomDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     WarrantyRoomDatabase::class.java,
-                    "item_database"
+                    DATABASE_NAME
                 )
                     .fallbackToDestructiveMigration() //TODO: Remove this on production
                     .build()

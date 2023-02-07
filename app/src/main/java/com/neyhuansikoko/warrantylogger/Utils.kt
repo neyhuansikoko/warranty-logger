@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.exifinterface.media.ExifInterface
 import androidx.lifecycle.MutableLiveData
 import com.google.android.material.datepicker.CalendarConstraints
@@ -111,4 +112,20 @@ fun localDateFromMillis(millis: Long): LocalDate {
         calendar.get(GregorianCalendar.MONTH) + 1, //Calendar month start at 0 expect start at 1
         calendar.get(GregorianCalendar.DAY_OF_MONTH)
     )
+}
+
+fun displayShortMessage(context: Context, message: String) {
+    Toast.makeText(
+        context,
+        message,
+        Toast.LENGTH_SHORT
+    ).show()
+}
+
+fun displayLongMessage(context: Context, message: String) {
+    Toast.makeText(
+        context,
+        message,
+        Toast.LENGTH_LONG
+    ).show()
 }

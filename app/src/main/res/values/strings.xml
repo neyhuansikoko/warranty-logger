@@ -58,5 +58,9 @@
     <string name="btn_tg_deadline_text">Deadline</string>
     <string name="backup_and_restore_text"><![CDATA[Backup & Restore]]></string>
     <string name="backup_text">Backup Data</string>
-    <string name="restore_text">Restore Data</string>
+    <string name="restore_text">Restore data</string>
+    <string name="no_backup_set_text">No backup set</string>
+    <string name="restart_dialog_text">This action will overwrite all data and restart the application. Do you want to continue?</string>
+    <string name="export_backup_text">Export Backup</string>
+    <string name="import_backup_text">Import Backup</string>
 </resources>

@@ -29,8 +29,13 @@ class WarrantyListFragment : Fragment() {
 
     private val sharedViewModel: WarrantyViewModel by activityViewModels()
 
-    private val clickListener: (Warranty) -> Unit = {
-        navigateToDetail(it)
+    private val clickListener: (Warranty) -> Boolean = {
+        if (actionMode == null) {
+            navigateToDetail(it)
+            false
+        } else {
+            true
+        }
     }
 
     private val contextListener: (Warranty, Boolean) -> Unit = { warranty, isChecked ->
@@ -86,7 +91,7 @@ class WarrantyListFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
 
         _binding = FragmentWarrantyListBinding.inflate(inflater, container, false)
         return binding.root
@@ -241,11 +246,17 @@ class WarrantyListFragment : Fragment() {
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                if (menuItem.itemId == R.id.menu_item_clear_search) {
-                    resetOptionMenu()
-                    return true
+                return when (menuItem.itemId) {
+                    R.id.menu_item_clear_search -> {
+                        resetOptionMenu()
+                        true
+                    }
+                    R.id.menu_item_backup -> {
+                        navigateToBackup()
+                        true
+                    }
+                    else -> false
                 }
-                return false
             }
 
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
@@ -254,7 +265,7 @@ class WarrantyListFragment : Fragment() {
     fun resetOrderDisplay() {
         binding.apply {
             tvListWarrantyNameLabel.text = getString(R.string.warranty_name_shortened_label_text)
-            tvListExpirationDateLabel.text = getString(R.string.expiration_date_shortened_label_text)
+            tvListExpirationDateLabel.text = getString(R.string.expiration_date_sort_asc_shortened_label_text)
             sharedViewModel.apply {
                 allWarranties.value?.let { filterWarranties.value = getSortedWarranties(
                     it,
@@ -282,10 +293,12 @@ class WarrantyListFragment : Fragment() {
     }
 
     private fun navigateToDetail(warranty: Warranty) {
-        if (actionMode == null) {
-            sharedViewModel.assignModel(warranty)
-            findNavController().navigate(R.id.action_warrantyListFragment_to_warrantyDetailFragment)
-        }
+        sharedViewModel.assignModel(warranty)
+        findNavController().navigate(R.id.action_warrantyListFragment_to_warrantyDetailFragment)
+    }
+
+    private fun navigateToBackup() {
+        findNavController().navigate(R.id.action_warrantyListFragment_to_backupFragment)
     }
 
     private fun showConfirmationDialog() {

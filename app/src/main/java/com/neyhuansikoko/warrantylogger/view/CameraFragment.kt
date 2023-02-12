@@ -22,12 +22,16 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.core.net.toFile
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.neyhuansikoko.warrantylogger.*
 import com.neyhuansikoko.warrantylogger.R
 import com.neyhuansikoko.warrantylogger.database.isValid
 import com.neyhuansikoko.warrantylogger.databinding.FragmentCameraBinding
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -145,7 +149,7 @@ class CameraFragment : Fragment() {
             }
         }
 
-        val scaleGestureDetector = ScaleGestureDetector(context, listener)
+        val scaleGestureDetector = ScaleGestureDetector(requireContext(), listener)
 
         binding.viewFinder.setOnTouchListener { _, event ->
             scaleGestureDetector.onTouchEvent(event)
@@ -177,11 +181,17 @@ class CameraFragment : Fragment() {
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults){
                     val outputUri = output.savedUri
-                    val msg = "Photo capture succeeded: $outputUri"
-                    Toast.makeText(requireActivity().baseContext, msg, Toast.LENGTH_SHORT).show()
-                    Log.d(TAG, msg)
-                    sharedViewModel.tempImage = outputUri?.toFile()?.compressImage()
-                    navigateToAddWarranty()
+                    outputUri?.toFile()?.let {
+                        val msg = "Photo capture succeeded: ${it.name}"
+                        Toast.makeText(requireActivity().baseContext, msg, Toast.LENGTH_SHORT).show()
+
+                        lifecycleScope.launch(Dispatchers.Default) {
+                            sharedViewModel.onImgCopiedToTemp(it)
+                            withContext(Dispatchers.Main) {
+                                navigateToAddWarranty()
+                            }
+                        }
+                    }
                 }
             }
         )

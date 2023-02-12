@@ -25,4 +25,9 @@
     <style name="Theme.WarrantyLogger.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="Theme.WarrantyLogger.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    
+    <style name="circleShape">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
 </resources>

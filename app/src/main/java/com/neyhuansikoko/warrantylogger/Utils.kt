@@ -9,6 +9,7 @@ import android.view.inputmethod.InputMethodManager
 import androidx.exifinterface.media.ExifInterface
 import androidx.lifecycle.MutableLiveData
 import com.google.android.material.datepicker.CalendarConstraints
+import com.google.android.material.snackbar.Snackbar
 import com.neyhuansikoko.warrantylogger.database.Warranty
 import java.io.File
 import java.io.FileOutputStream
@@ -111,4 +112,29 @@ fun localDateFromMillis(millis: Long): LocalDate {
         calendar.get(GregorianCalendar.MONTH) + 1, //Calendar month start at 0 expect start at 1
         calendar.get(GregorianCalendar.DAY_OF_MONTH)
     )
+}
+
+fun displayShortMessage(view: View, message: String): Snackbar {
+    return Snackbar.make(
+        view,
+        message,
+        Snackbar.LENGTH_SHORT
+    ).also { it.show() }
+}
+
+fun displayLongMessage(view: View, message: String): Snackbar {
+    return Snackbar.make(
+        view,
+        message,
+        Snackbar.LENGTH_LONG
+    ).also { it.show() }
+}
+
+fun getLastModifiedDate(file: File): String? {
+    return if (file.exists()) {
+        val dateInMillis = file.lastModified()
+        formatDateTimeMillis(dateInMillis)
+    } else {
+        null
+    }
 }

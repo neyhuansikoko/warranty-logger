@@ -11,7 +11,7 @@ import com.neyhuansikoko.warrantylogger.database.getRemainingDays
 import com.neyhuansikoko.warrantylogger.databinding.ListItemWarrantyBinding
 
 class WarrantyListAdapter(
-    private val clickListener: (Warranty) -> Unit,
+    private val clickListener: (Warranty) -> Boolean,
     private val contextListener: (Warranty, Boolean) -> Unit
 ) : ListAdapter<Warranty, WarrantyListAdapter.ViewHolder>(DiffCallback) {
 
@@ -50,11 +50,21 @@ class WarrantyListAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val warranty = getItem(position)
 
-        holder.itemView.setOnClickListener { clickListener(warranty) }
         holder.itemView.findViewById<CheckBox>(R.id.cb_item_delete).apply {
             isChecked = selectAll
             setOnClickListener {
                 contextListener(warranty, isChecked)
+            }
+            holder.itemView.setOnClickListener {
+                if (clickListener(warranty)) {
+                    isChecked = !isChecked
+                    contextListener(warranty, isChecked)
+                }
+            }
+            holder.itemView.setOnLongClickListener {
+                isChecked = !isChecked
+                contextListener(warranty, isChecked)
+                return@setOnLongClickListener true
             }
         }
 

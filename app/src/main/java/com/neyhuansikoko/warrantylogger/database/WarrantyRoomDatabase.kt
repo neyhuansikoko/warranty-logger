@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.neyhuansikoko.warrantylogger.DATABASE_NAME
 
-@Database(entities = [Warranty::class], version = 1, exportSchema = false)
+@Database(entities = [Warranty::class], version = 2, exportSchema = false)
 abstract class WarrantyRoomDatabase : RoomDatabase() {
 
     abstract fun warrantyDao(): WarrantyDao

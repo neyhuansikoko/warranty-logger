@@ -10,6 +10,7 @@ import androidx.core.net.toUri
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.DateValidatorPointForward
@@ -40,25 +41,29 @@ class AddWarrantyFragment : Fragment() {
     private val inputUnit: String get() = binding.actvAddUnit.text.toString()
     private val inputExpirationDate: String get() = binding.tilEtAddExpirationDate.text.toString()
     private val tgCheckedId: Int get() = binding.tgAddDeadline.checkedButtonId
-    private val imageChooserActivity = registerForActivityResult(ActivityResultContracts.GetContent()) {imageUri ->
+    private val imageChooserActivity = registerForActivityResult(ActivityResultContracts.GetContent()) { imageUri ->
         //Return content URI
         if (imageUri != null) {
-            runBlocking {
-                withContext(Dispatchers.IO) {
+            lifecycleScope.launch(Dispatchers.IO) {
+                withContext(Dispatchers.Default) {
                     val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
                         .format(System.currentTimeMillis())
-                    val file = File.createTempFile(name, TEMP_IMAGE_SUFFIX, requireActivity().cacheDir)
+                    val file = runCatching {
+                        File.createTempFile(name, TEMP_IMAGE_SUFFIX, requireActivity().cacheDir)
+                    }.getOrNull()
 
-                    context?.contentResolver?.openInputStream(imageUri).use { inputStream ->
-                        file.outputStream().use { outputStream ->
-                            inputStream?.copyTo(outputStream)
+                    file?.let {
+                        context?.contentResolver?.openInputStream(imageUri).use { inputStream ->
+                            it.outputStream().use { outputStream ->
+                                inputStream?.copyTo(outputStream)
+                            }
+                        }
+
+                        launch(Dispatchers.Default) {
+                            sharedViewModel.onImgCopiedToTemp(it)
                         }
                     }
-
-                    sharedViewModel.tempImage = file.compressImage()
                 }
-                sharedViewModel.tempImage?.let { showImage(it) }
-                binding.imgAddImage.invalidate()
             }
         }
     }
@@ -164,7 +169,7 @@ class AddWarrantyFragment : Fragment() {
             }
 
             //Check if tempImage exist and load it, if not then try to load from modelWarranty
-            sharedViewModel.tempImage?.let {
+            sharedViewModel.tempImage.value?.let {
                 showImage(it)
             } ?: model.image?.let { image ->
                 getImageFile(requireActivity(), image)?.let {
@@ -198,6 +203,10 @@ class AddWarrantyFragment : Fragment() {
                     tilEtAddExpirationDate.setText(formatDateMillis(model.expirationDate))
                 }
                 showDatePicker(model.expirationDate, onPositiveClick, dateConstraints)
+            }
+
+            sharedViewModel.tempImage.observe(viewLifecycleOwner) {
+                sharedViewModel.tempImage.value?.let { showImage(it) }
             }
         }
     }

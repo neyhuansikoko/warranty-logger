@@ -9,13 +9,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import com.neyhuansikoko.warrantylogger.*
 import com.neyhuansikoko.warrantylogger.databinding.FragmentBackupBinding
 import com.neyhuansikoko.warrantylogger.viewmodel.BackupViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import java.io.File
 
 class BackupFragment : Fragment() {
@@ -28,32 +27,31 @@ class BackupFragment : Fragment() {
 
     private val viewModel: BackupViewModel by activityViewModels()
 
+    private var snackbar: Snackbar? = null
+
     private val backupChooserActivity = registerForActivityResult(ActivityResultContracts.GetContent()) { backupUri ->
         //Return content URI
         if (backupUri != null) {
             context?.contentResolver?.let { contentResolver ->
                 if (contentResolver.getType(backupUri).equals(ZIP_CONTENT_TYPE)) {
-                    runBlocking {
-                        withContext(Dispatchers.IO) {
-                            val internalBackup = File(requireActivity().applicationContext.filesDir, BACKUP_ZIP)
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        val internalBackup = File(requireActivity().applicationContext.filesDir, BACKUP_ZIP)
 
-                            context?.contentResolver?.openInputStream(backupUri).use { inputStream ->
-                                internalBackup.outputStream().use { outputStream ->
-                                    inputStream?.copyTo(outputStream)
-                                }
+                        context?.contentResolver?.openInputStream(backupUri).use { inputStream ->
+                            internalBackup.outputStream().use { outputStream ->
+                                inputStream?.copyTo(outputStream)
                             }
-
-                            viewModel.updateBackupDate()
                         }
 
+                        viewModel.onBackupImported()
                         displayShortMessage(
-                            requireActivity().applicationContext,
-                            "Import backup is successful"
+                            binding.tvBackupImport,
+                            "Backup import is complete"
                         )
                     }
                 } else {
                     displayLongMessage(
-                        requireActivity().applicationContext,
+                        binding.tvBackupImport,
                         "Incompatible file format. Please choose a ZIP file"
                     )
                 }
@@ -90,15 +88,27 @@ class BackupFragment : Fragment() {
                 onImport()
             }
 
-            lifecycleScope.launch {
-                viewModel.backupCompleted.observe(viewLifecycleOwner) { date ->
-                    tvBackupDate.text = formatBackupDate(date)
+            viewModel.lastBackupDate.observe(viewLifecycleOwner) { date ->
+                tvBackupDate.text = formatBackupDate(date)
 
-                    if (date != null) {
-                        tvBackupExport.visibility = View.VISIBLE
-                    } else {
-                        tvBackupExport.visibility = View.GONE
-                    }
+                if (date != null) {
+                    tvBackupExport.visibility = View.VISIBLE
+                } else {
+                    tvBackupExport.visibility = View.GONE
+                }
+            }
+            viewModel.backupComplete.observe(viewLifecycleOwner) { completed ->
+                snackbar?.dismiss()
+                snackbar = if (completed) {
+                    displayShortMessage(
+                        binding.tvBackupBackup,
+                        "Backup is completed",
+                    )
+                } else {
+                    displayShortMessage(
+                        binding.tvBackupBackup,
+                        "Backup has failed",
+                    )
                 }
             }
         }
@@ -111,7 +121,7 @@ class BackupFragment : Fragment() {
     private fun onExport() {
         viewModel.exportBackupFile { path ->
             displayLongMessage(
-                requireActivity().applicationContext,
+                binding.tvBackupExport,
                 "Exported to: $path"
             )
         }
@@ -138,18 +148,12 @@ class BackupFragment : Fragment() {
     }
 
     private fun onBackup() {
-        displayShortMessage(requireContext(), "Backing up data...")
-
-        viewModel.backupDatabase { successful ->
-            displayShortMessage(
-                requireActivity().applicationContext,
-                if (successful) {
-                    "Backup is successful"
-                } else {
-                    "Backup has failed"
-                }
-            )
-        }
+        snackbar = Snackbar.make(
+            binding.tvBackupBackup,
+            "Backup in progress..",
+            Snackbar.LENGTH_SHORT
+        ).also { it.show() }
+        viewModel.backupDatabase()
     }
 
     private fun onRestore() {

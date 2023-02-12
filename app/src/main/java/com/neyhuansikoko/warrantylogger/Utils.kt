@@ -6,10 +6,10 @@ import android.graphics.BitmapFactory
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.Toast
 import androidx.exifinterface.media.ExifInterface
 import androidx.lifecycle.MutableLiveData
 import com.google.android.material.datepicker.CalendarConstraints
+import com.google.android.material.snackbar.Snackbar
 import com.neyhuansikoko.warrantylogger.database.Warranty
 import java.io.File
 import java.io.FileOutputStream
@@ -114,18 +114,27 @@ fun localDateFromMillis(millis: Long): LocalDate {
     )
 }
 
-fun displayShortMessage(context: Context, message: String) {
-    Toast.makeText(
-        context,
+fun displayShortMessage(view: View, message: String): Snackbar {
+    return Snackbar.make(
+        view,
         message,
-        Toast.LENGTH_SHORT
-    ).show()
+        Snackbar.LENGTH_SHORT
+    ).also { it.show() }
 }
 
-fun displayLongMessage(context: Context, message: String) {
-    Toast.makeText(
-        context,
+fun displayLongMessage(view: View, message: String): Snackbar {
+    return Snackbar.make(
+        view,
         message,
-        Toast.LENGTH_LONG
-    ).show()
+        Snackbar.LENGTH_LONG
+    ).also { it.show() }
+}
+
+fun getLastModifiedDate(file: File): String? {
+    return if (file.exists()) {
+        val dateInMillis = file.lastModified()
+        formatDateTimeMillis(dateInMillis)
+    } else {
+        null
+    }
 }

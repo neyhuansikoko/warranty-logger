@@ -31,7 +31,11 @@ class WarrantyViewModel(application: Application): AndroidViewModel(application)
     val mediatorWarranties: MediatorLiveData<List<Warranty>> = MediatorLiveData()
     val mediatorSize: Int get() = mediatorWarranties.value?.size ?: 0
 
-    var tempImage: File? = null
+    private val _tempImage: MutableLiveData<File?> = MutableLiveData()
+    val tempImage: LiveData<File?> get() = _tempImage
+
+    private val _workExist: MutableLiveData<Boolean> = MutableLiveData()
+    val workExist: LiveData<Boolean> get() = _workExist
 
     val deleteList: MutableLiveData<MutableList<Warranty>> = MutableLiveData(mutableListOf())
     val deleteSize: Int get() = deleteList.value?.size ?: 0
@@ -158,17 +162,17 @@ class WarrantyViewModel(application: Application): AndroidViewModel(application)
     //Copy temp image to non-cache directory
      private fun saveTempImage(): File? {
         var newImage: File? = null
-        tempImage?.let { temp ->
+        tempImage.value?.let { temp ->
             newImage = getImageFileAbs(getApplication(), temp.name)
             temp.copyTo(newImage!!)
             temp.delete()
-            tempImage = null
+            _tempImage.value = null
         }
         return newImage
     }
 
     fun clearTempImage() {
-        tempImage = null
+        _tempImage.value = null
         clearCache(getApplication())
     }
 
@@ -202,22 +206,24 @@ class WarrantyViewModel(application: Application): AndroidViewModel(application)
         return days
     }
 
-    internal suspend fun doesWorkExist(): Boolean {
+    internal suspend fun onCheckWorkExist() {
         displayModel.value?.takeIf { it.isValid() }?.let {
             val workInfo = workManager.getWorkInfosForUniqueWork(it.id.toString()).await()
 
             if (workInfo.size == 1) {
                 val workState = workInfo[0].state
 
-                return (
-                        workState == WorkInfo.State.BLOCKED ||
-                                workState == WorkInfo.State.ENQUEUED ||
-                                workState == WorkInfo.State.RUNNING
-                        )
+                _workExist.postValue(
+                    workState == WorkInfo.State.BLOCKED ||
+                            workState == WorkInfo.State.ENQUEUED ||
+                            workState == WorkInfo.State.RUNNING
+                )
+                return
             }
         }
 
-        return false
+        _workExist.postValue(false)
+        return
     }
 
     internal fun cancelWork() {
@@ -262,5 +268,9 @@ class WarrantyViewModel(application: Application): AndroidViewModel(application)
                 }
             }
         }
+    }
+
+    fun onImgCopiedToTemp(file: File) {
+        _tempImage.postValue(file.compressImage())
     }
 }

@@ -9,6 +9,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.neyhuansikoko.warrantylogger.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.BufferedOutputStream
@@ -26,13 +27,16 @@ class BackupViewModel(application: Application) : AndroidViewModel(application) 
     private val warrantyApp = getApplication<WarrantyLoggerApplication>()
     private val appContext get() = warrantyApp.applicationContext
     private val database get() = warrantyApp.database
+    private val dbBackupFile get() = File(appContext.filesDir, BACKUP_ZIP)
 
-    private var _backupCompleted: MutableLiveData<String?> = MutableLiveData(
-        getLastModifiedDate(File(appContext.filesDir, BACKUP_ZIP))
+    private var _lastBackupDate: MutableLiveData<String?> = MutableLiveData(
+        getLastModifiedDate(dbBackupFile)
     )
-    val backupCompleted: LiveData<String?> get() = _backupCompleted
+    val lastBackupDate: LiveData<String?> get() = _lastBackupDate
+    private var _backupComplete: MutableLiveData<Boolean> = MutableLiveData()
+    val backupComplete: LiveData<Boolean> get() = _backupComplete
 
-    fun backupDatabase(callback: (Boolean) -> Unit) {
+    fun backupDatabase() {
         viewModelScope.launch(Dispatchers.IO) {
             var successful = false
 
@@ -83,15 +87,14 @@ class BackupViewModel(application: Application) : AndroidViewModel(application) 
                     }
                 }
 
-                _backupCompleted.postValue(getLastModifiedDate(outputZipFile))
+                _lastBackupDate.postValue(getLastModifiedDate(outputZipFile))
                 successful = true
 
             } catch (e: Exception) {
                 e.printStackTrace()
             } finally {
-                withContext(Dispatchers.Main) {
-                    callback(successful)
-                }
+                delay(3000)
+                _backupComplete.postValue(successful)
             }
         }
     }
@@ -102,7 +105,7 @@ class BackupViewModel(application: Application) : AndroidViewModel(application) 
                 return@launch
             }
             val dbPath = database.openHelper.readableDatabase.path
-            val dbFile = File(dbPath)
+            val dbFile = File(dbPath!!)
             val dbWalFile = File(dbFile.path + WAL_FILE_SUFFIX)
             val dbShmFile = File(dbFile.path + SHM_FILE_SUFFIX)
 
@@ -172,20 +175,11 @@ class BackupViewModel(application: Application) : AndroidViewModel(application) 
 
     private fun checkpoint() {
         val writableDb = database.openHelper.writableDatabase
-        writableDb.query("PRAGMA wal_checkpoint(TRUNCATE);", null)
+        writableDb.query("PRAGMA wal_checkpoint(TRUNCATE);", emptyArray())
     }
 
-    fun updateBackupDate() {
-        _backupCompleted.postValue(getLastModifiedDate(File(appContext.filesDir, BACKUP_ZIP)))
-    }
-
-    private fun getLastModifiedDate(file: File): String? {
-        return if (file.exists()) {
-            val dateInMillis = file.lastModified()
-            formatDateTimeMillis(dateInMillis)
-        } else {
-            null
-        }
+    fun onBackupImported() {
+        _lastBackupDate.postValue(getLastModifiedDate(dbBackupFile))
     }
 
     private fun restart() {

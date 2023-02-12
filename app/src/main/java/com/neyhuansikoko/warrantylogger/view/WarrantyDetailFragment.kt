@@ -8,6 +8,7 @@ import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
@@ -17,8 +18,8 @@ import com.neyhuansikoko.warrantylogger.database.getRemainingDate
 import com.neyhuansikoko.warrantylogger.database.isValid
 import com.neyhuansikoko.warrantylogger.databinding.FragmentWarrantyDetailBinding
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
-import kotlinx.coroutines.async
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class WarrantyDetailFragment : Fragment() {
 
@@ -80,11 +81,6 @@ class WarrantyDetailFragment : Fragment() {
             arrayAdapter = ArrayAdapter(requireContext(), R.layout.list_item_unit, resources.getStringArray(R.array.time_unit_array))
             actvDetailUnit.setAdapter(arrayAdapter)
 
-            if (getDaysFromDateMillis(warranty.expirationDate) > 1) {
-                switchDetailReminder.isEnabled = true
-                btnDetailCustomizeReminder.isEnabled = true
-            }
-
             btnDetailApply.setOnClickListener { view ->
                 closeSoftKeyboard(binding.root, requireContext())
                 setReminder(view, warranty)
@@ -106,22 +102,30 @@ class WarrantyDetailFragment : Fragment() {
                 }
             }
 
-            runBlocking {
-                val workExist = async { sharedViewModel.doesWorkExist() }
-                switchDetailReminder.isChecked = workExist.await()
+            lifecycleScope.launch(Dispatchers.Default) {
+                sharedViewModel.onCheckWorkExist()
+            }
 
-                switchDetailReminder.setOnClickListener { view ->
-                    if (switchDetailReminder.isChecked) {
-                        val delayTime = setReminder(view, warranty)
+            sharedViewModel.workExist.observe(viewLifecycleOwner) { exist ->
+                if (getDaysFromDateMillis(warranty.expirationDate) > 1) {
+                    switchDetailReminder.isEnabled = true
+                    btnDetailCustomizeReminder.isEnabled = true
 
-                        if (delayTime < 1) { switchDetailReminder.isChecked = false }
-                    } else {
-                        sharedViewModel.cancelWork()
-                        Snackbar.make(
-                            switchDetailReminder,
-                            "Reminder has been cancelled",
-                            Snackbar.LENGTH_SHORT
-                        ).show()
+                    switchDetailReminder.isChecked = exist
+
+                    switchDetailReminder.setOnClickListener { view ->
+                        if (switchDetailReminder.isChecked) {
+                            val delayTime = setReminder(view, warranty)
+
+                            if (delayTime < 1) { switchDetailReminder.isChecked = false }
+                        } else {
+                            sharedViewModel.cancelWork()
+                            Snackbar.make(
+                                switchDetailReminder,
+                                "Reminder has been cancelled",
+                                Snackbar.LENGTH_SHORT
+                            ).show()
+                        }
                     }
                 }
             }

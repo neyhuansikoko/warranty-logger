@@ -265,7 +265,7 @@ class WarrantyListFragment : Fragment() {
     fun resetOrderDisplay() {
         binding.apply {
             tvListWarrantyNameLabel.text = getString(R.string.warranty_name_shortened_label_text)
-            tvListExpirationDateLabel.text = getString(R.string.expiration_date_shortened_label_text)
+            tvListExpirationDateLabel.text = getString(R.string.expiration_date_sort_asc_shortened_label_text)
             sharedViewModel.apply {
                 allWarranties.value?.let { filterWarranties.value = getSortedWarranties(
                     it,

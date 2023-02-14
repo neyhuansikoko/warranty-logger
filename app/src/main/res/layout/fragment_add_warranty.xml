@@ -203,29 +203,47 @@
 
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/tv_add_image_name"
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:singleLine="true"
-            android:text="@string/no_image_set_text" />
+            app:cardElevation="0dp"
+            app:strokeColor="@color/stroke_color"
+            app:strokeWidth="1dp">
 
-        <ImageView
-            android:id="@+id/img_add_image"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:adjustViewBounds="true"
-            android:contentDescription="@string/image_of_warranty_text"
-            android:visibility="gone"
-            tools:srcCompat="@tools:sample/backgrounds/scenic" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
 
-        <com.google.android.material.divider.MaterialDivider
-            android:id="@+id/div_add_date"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp" />
+                <TextView
+                    android:id="@+id/tv_add_image_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:text="@string/no_image_set_text"
+                    android:textAppearance="?attr/textAppearanceSubtitle1"
+                    android:textStyle="bold"/>
+
+                <androidx.core.widget.NestedScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_add_image"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="16dp"
+                        android:visibility="gone"
+                        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                        app:spanCount="3"
+                        tools:itemCount="20"
+                        tools:listitem="@layout/list_item_image"
+                        tools:visibility="visible" />
+                </androidx.core.widget.NestedScrollView>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <Button
             android:id="@+id/btn_add_save"

@@ -1,4 +1,4 @@
-package com.neyhuansikoko.warrantylogger
+package com.neyhuansikoko.warrantylogger.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -6,9 +6,11 @@ import android.widget.CheckBox
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.neyhuansikoko.warrantylogger.database.Warranty
-import com.neyhuansikoko.warrantylogger.database.getRemainingDays
+import com.neyhuansikoko.warrantylogger.R
+import com.neyhuansikoko.warrantylogger.database.model.Warranty
+import com.neyhuansikoko.warrantylogger.database.model.getRemainingDays
 import com.neyhuansikoko.warrantylogger.databinding.ListItemWarrantyBinding
+import com.neyhuansikoko.warrantylogger.formatDateMillis
 
 class WarrantyListAdapter(
     private val clickListener: (Warranty) -> Boolean,
@@ -30,7 +32,7 @@ class WarrantyListAdapter(
 
     companion object DiffCallback: DiffUtil.ItemCallback<Warranty>() {
         override fun areItemsTheSame(oldItem: Warranty, newItem: Warranty): Boolean {
-            return oldItem.id == newItem.id
+            return oldItem.warrantyId == newItem.warrantyId
         }
 
         override fun areContentsTheSame(oldItem: Warranty, newItem: Warranty): Boolean {

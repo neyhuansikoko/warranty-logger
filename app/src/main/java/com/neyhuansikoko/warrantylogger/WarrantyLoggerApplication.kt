@@ -5,11 +5,10 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
-import com.neyhuansikoko.warrantylogger.database.WarrantyRoomDatabase
+import dagger.hilt.android.HiltAndroidApp
 
+@HiltAndroidApp
 class WarrantyLoggerApplication : Application() {
-
-    val database: WarrantyRoomDatabase by lazy { WarrantyRoomDatabase.getDatabase(this) }
 
     override fun onCreate() {
         super.onCreate()

@@ -76,7 +76,7 @@
             android:padding="16dp"
             android:text="@string/export_backup_text"
             android:textAppearance="?attr/textAppearanceSubtitle1"
-            android:visibility="gone" />
+            android:visibility="visible" />
 
         <View
             android:id="@+id/divider4"

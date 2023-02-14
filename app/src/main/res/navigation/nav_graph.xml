@@ -35,6 +35,9 @@
         <action
             android:id="@+id/action_warrantyDetailFragment_to_addWarrantyFragment"
             app:destination="@id/addWarrantyFragment" />
+        <action
+            android:id="@+id/action_warrantyDetailFragment_to_imageViewFragment"
+            app:destination="@id/imageViewFragment" />
     </fragment>
     <fragment
         android:id="@+id/addWarrantyFragment"
@@ -52,6 +55,9 @@
         <action
             android:id="@+id/action_addWarrantyFragment_to_cameraFragment"
             app:destination="@id/cameraFragment" />
+        <action
+            android:id="@+id/action_addWarrantyFragment_to_imageViewFragment"
+            app:destination="@id/imageViewFragment" />
     </fragment>
     <fragment
         android:id="@+id/cameraFragment"
@@ -69,4 +75,16 @@
         android:name="com.neyhuansikoko.warrantylogger.view.BackupFragment"
         android:label="Backup &amp; Restore"
         tools:layout="@layout/fragment_backup" />
+    <fragment
+        android:id="@+id/imageViewFragment"
+        android:name="com.neyhuansikoko.warrantylogger.view.ImageViewFragment"
+        android:label="{imageName}"
+        tools:layout="@layout/fragment_image_view">
+        <argument
+            android:name="imageUri"
+            app:argType="string" />
+        <argument
+            android:name="imageName"
+            app:argType="string" />
+    </fragment>
 </navigation>

@@ -10,21 +10,20 @@ import androidx.core.net.toUri
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.DateValidatorPointForward
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.neyhuansikoko.warrantylogger.*
-import com.neyhuansikoko.warrantylogger.database.isValid
+import com.neyhuansikoko.warrantylogger.adapter.ImageListAdapter
+import com.neyhuansikoko.warrantylogger.database.model.Image
+import com.neyhuansikoko.warrantylogger.database.model.isValid
 import com.neyhuansikoko.warrantylogger.databinding.FragmentAddWarrantyBinding
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
-import kotlinx.coroutines.*
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.*
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class AddWarrantyFragment : Fragment() {
 
     private var _binding: FragmentAddWarrantyBinding? = null
@@ -41,30 +40,13 @@ class AddWarrantyFragment : Fragment() {
     private val inputUnit: String get() = binding.actvAddUnit.text.toString()
     private val inputExpirationDate: String get() = binding.tilEtAddExpirationDate.text.toString()
     private val tgCheckedId: Int get() = binding.tgAddDeadline.checkedButtonId
-    private val imageChooserActivity = registerForActivityResult(ActivityResultContracts.GetContent()) { imageUri ->
+
+    private lateinit var rvAdapter: ImageListAdapter
+
+    private val imageChooserActivity = registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { imageUriList ->
         //Return content URI
-        if (imageUri != null) {
-            lifecycleScope.launch(Dispatchers.IO) {
-                withContext(Dispatchers.Default) {
-                    val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
-                        .format(System.currentTimeMillis())
-                    val file = runCatching {
-                        File.createTempFile(name, TEMP_IMAGE_SUFFIX, requireActivity().cacheDir)
-                    }.getOrNull()
-
-                    file?.let {
-                        context?.contentResolver?.openInputStream(imageUri).use { inputStream ->
-                            it.outputStream().use { outputStream ->
-                                inputStream?.copyTo(outputStream)
-                            }
-                        }
-
-                        launch(Dispatchers.Default) {
-                            sharedViewModel.onImgCopiedToTemp(it)
-                        }
-                    }
-                }
-            }
+        if (!imageUriList.isNullOrEmpty()) {
+            sharedViewModel.onImagesRetrieved(imageUriList)
         }
     }
     private val model get() = sharedViewModel.inputModel
@@ -95,13 +77,35 @@ class AddWarrantyFragment : Fragment() {
             tilEtAddNote.setText(model.note)
             tilEtAddPurchaseDate.setText(formatDateMillis(model.purchaseDate))
 
-            val adapter = ArrayAdapter(
+            val actvAdapter = ArrayAdapter(
                 requireContext(),
                 R.layout.list_item_unit,
                 resources.getStringArray(R.array.time_unit_array_larger)
             )
-            actvAddUnit.setAdapter(adapter)
-            actvAddUnit.setText(adapter.getItem(0), false)
+            actvAddUnit.setAdapter(actvAdapter)
+            actvAddUnit.setText(actvAdapter.getItem(0), false)
+
+            rvAdapter = ImageListAdapter(
+                onLongClick = { image ->
+                    onTempImageLongClick(image)
+                },
+                onClick = { imageUri ->
+                    onImageClick(imageUri)
+                }
+            )
+            rvAddImage.adapter = rvAdapter
+
+            sharedViewModel.imageList.observe(viewLifecycleOwner) { imageList ->
+                if (imageList.isNotEmpty()) {
+                    this.tvAddImageName.text =
+                        "${imageList.size} ${if (imageList.size == 1) "image" else "images"} selected"
+                    this.rvAddImage.visibility = View.VISIBLE
+                    rvAdapter.submitList(imageList)
+                } else {
+                    this.tvAddImageName.text = getString(R.string.no_image_set_text)
+                    this.rvAddImage.visibility = View.GONE
+                }
+            }
 
             tgAddDeadline.addOnButtonCheckedListener { _, checkedId, isChecked ->
                 if (isChecked) {
@@ -168,13 +172,8 @@ class AddWarrantyFragment : Fragment() {
                 imageChooserActivity.launch("image/*")
             }
 
-            //Check if tempImage exist and load it, if not then try to load from modelWarranty
-            sharedViewModel.tempImage.value?.let {
-                showImage(it)
-            } ?: model.image?.let { image ->
-                getImageFile(requireActivity(), image)?.let {
-                    showImage(it)
-                }
+            if (sharedViewModel.getImageUriCount() > 0) {
+                sharedViewModel.onCheckCameraImages()
             }
 
             tilEtAddPurchaseDate.setOnClickListener {
@@ -204,20 +203,32 @@ class AddWarrantyFragment : Fragment() {
                 }
                 showDatePicker(model.expirationDate, onPositiveClick, dateConstraints)
             }
-
-            sharedViewModel.tempImage.observe(viewLifecycleOwner) {
-                sharedViewModel.tempImage.value?.let { showImage(it) }
-            }
         }
     }
 
-    private fun showImage(file: File) {
-        binding.apply {
-            this.tvAddImageName.visibility = View.GONE
-            this.imgAddImage.setImageURI(file.toUri())
-            this.imgAddImage.visibility = View.VISIBLE
-        }
+    private fun onTempImageLongClick(image: Image) {
+        onTempImageDelete(image)
     }
+
+    private fun onTempImageDelete(image: Image) {
+        sharedViewModel.onTempImageDelete(image)
+    }
+
+    private fun onImageClick(imageUri: String) {
+        val action = AddWarrantyFragmentDirections.actionAddWarrantyFragmentToImageViewFragment(
+            imageUri = imageUri,
+            imageName = getUriFilename(requireContext(), imageUri.toUri())
+        )
+        findNavController().navigate(action)
+    }
+
+//    private fun showImage(file: File) {
+//        binding.apply {
+//            this.tvAddImageName.visibility = View.GONE
+//            this.imgAddImage.setImageURI(file.toUri())
+//            this.imgAddImage.visibility = View.VISIBLE
+//        }
+//    }
 
     private fun navigateToCamera() {
         findNavController().navigate(R.id.action_addWarrantyFragment_to_cameraFragment)

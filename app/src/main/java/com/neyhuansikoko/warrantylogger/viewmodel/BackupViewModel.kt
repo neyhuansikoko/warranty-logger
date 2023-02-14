@@ -8,6 +8,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.neyhuansikoko.warrantylogger.*
+import com.neyhuansikoko.warrantylogger.database.AppDatabase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -20,13 +22,17 @@ import java.util.*
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
+import javax.inject.Inject
 import kotlin.system.exitProcess
 
-class BackupViewModel(application: Application) : AndroidViewModel(application) {
+@HiltViewModel
+class BackupViewModel @Inject constructor(
+    application: Application,
+    private val database: AppDatabase
+) : AndroidViewModel(application) {
 
     private val warrantyApp = getApplication<WarrantyLoggerApplication>()
     private val appContext get() = warrantyApp.applicationContext
-    private val database get() = warrantyApp.database
     private val dbBackupFile get() = File(appContext.filesDir, BACKUP_ZIP)
 
     private var _lastBackupDate: MutableLiveData<String?> = MutableLiveData(
@@ -195,5 +201,9 @@ class BackupViewModel(application: Application) : AndroidViewModel(application) 
                 zipEntryIS.copyTo(fileOS)
             }
         }
+    }
+
+    fun onMessageShown() {
+        _backupComplete = MutableLiveData()
     }
 }

@@ -13,14 +13,18 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.neyhuansikoko.warrantylogger.*
-import com.neyhuansikoko.warrantylogger.database.Warranty
-import com.neyhuansikoko.warrantylogger.database.getRemainingDate
-import com.neyhuansikoko.warrantylogger.database.isValid
+import com.neyhuansikoko.warrantylogger.adapter.ImageListAdapter
+import com.neyhuansikoko.warrantylogger.database.model.Image
+import com.neyhuansikoko.warrantylogger.database.model.Warranty
+import com.neyhuansikoko.warrantylogger.database.model.getRemainingDate
+import com.neyhuansikoko.warrantylogger.database.model.isValid
 import com.neyhuansikoko.warrantylogger.databinding.FragmentWarrantyDetailBinding
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class WarrantyDetailFragment : Fragment() {
 
     private var _binding: FragmentWarrantyDetailBinding? = null
@@ -32,6 +36,8 @@ class WarrantyDetailFragment : Fragment() {
     private val sharedViewModel: WarrantyViewModel by activityViewModels()
 
     private lateinit var arrayAdapter: ArrayAdapter<String>
+
+    private lateinit var rvAdapter: ImageListAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -69,17 +75,28 @@ class WarrantyDetailFragment : Fragment() {
             tvDetailExpirationDate.text = formatDateMillis(warranty.expirationDate)
             tvDetailRemainingTime.text = warranty.getRemainingDate()
 
-            //Set image and image name, if it exist
-            warranty.image?.let { image ->
-                getImageFile(requireActivity(), image)?.let {
-                    tvDetailImageName.visibility = View.GONE
-                    imgDetailImage.setImageURI(it.toUri())
-                    imgDetailImage.visibility = View.VISIBLE
-                }
-            }
-
             arrayAdapter = ArrayAdapter(requireContext(), R.layout.list_item_unit, resources.getStringArray(R.array.time_unit_array))
             actvDetailUnit.setAdapter(arrayAdapter)
+
+            rvAdapter = ImageListAdapter(
+                onLongClick = { image ->
+                    onImageLongClick(image)
+                },
+                onClick = { imageUri ->
+                    onImageClick(imageUri)
+                }
+            )
+            rvDetailImage.adapter = rvAdapter
+
+            sharedViewModel.warrantyImageList.observe(viewLifecycleOwner) { imageList ->
+                if (imageList.isNotEmpty()) {
+                    this.tvDetailImageName.text =
+                        "${imageList.size} ${if (imageList.size == 1) "image" else "images"} saved"
+                    rvAdapter.submitList(imageList)
+                } else {
+                    this.tvDetailImageName.text = getString(R.string.no_image_set_text)
+                }
+            }
 
             btnDetailApply.setOnClickListener { view ->
                 closeSoftKeyboard(binding.root, requireContext())
@@ -130,7 +147,36 @@ class WarrantyDetailFragment : Fragment() {
                 }
             }
         }
+        sharedViewModel.onCheckWarrantyImages(warranty.warrantyId)
         setupOptionMenu()
+    }
+
+    private fun onImageLongClick(image: Image) {
+        showDeleteImageConfirmationDialog(image)
+    }
+
+    private fun showDeleteImageConfirmationDialog(image: Image) {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(getString(android.R.string.dialog_alert_title))
+            .setMessage(getString(R.string.delete_message_text))
+            .setCancelable(false)
+            .setNegativeButton(getString(R.string.cancel)) { _, _ -> }
+            .setPositiveButton(getString(R.string.yes)) { _, _ ->
+                onPersistImageDelete(image)
+            }
+            .show()
+    }
+
+    private fun onPersistImageDelete(image: Image) {
+        sharedViewModel.onPersistImageDelete(image)
+    }
+
+    private fun onImageClick(imageUri: String) {
+        val action = WarrantyDetailFragmentDirections.actionWarrantyDetailFragmentToImageViewFragment(
+            imageUri = imageUri,
+            imageName = getUriFilename(requireContext(), imageUri.toUri())
+        )
+        findNavController().navigate(action)
     }
 
     private fun setReminder(view: View, warranty: Warranty): Long {
@@ -193,7 +239,7 @@ class WarrantyDetailFragment : Fragment() {
                         true
                     }
                     R.id.menu_item_delete -> {
-                        showConfirmationDialog()
+                        showDeleteWarrantyConfirmationDialog()
                         true
                     }
                     else -> false
@@ -208,7 +254,7 @@ class WarrantyDetailFragment : Fragment() {
         findNavController().navigate(action)
     }
 
-    private fun showConfirmationDialog() {
+    private fun showDeleteWarrantyConfirmationDialog() {
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(getString(android.R.string.dialog_alert_title))
             .setMessage(getString(R.string.delete_message_text))

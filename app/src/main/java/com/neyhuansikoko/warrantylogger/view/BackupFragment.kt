@@ -110,6 +110,7 @@ class BackupFragment : Fragment() {
                         "Backup has failed",
                     )
                 }
+                viewModel.onMessageShown()
             }
         }
     }

@@ -4,6 +4,7 @@ An app to log warranty.
 Features:
 - Expiration date tracking and reminder
 - Picture taking using camera or file picker
+- Store multiple images for each warranty
 - Search and sort feature
 - Offline backup and restore
 - Export & Import backup file to & from device storage
@@ -13,5 +14,3 @@ To be implemented:
 - Customization setting
 - Better UI
 - Database migration scheme
-- Multiple picture for each warranty (currently only 1 is allowed)
-- Delete warranty image option (currently cannot delete image set for warranty, only able to overwrite it)

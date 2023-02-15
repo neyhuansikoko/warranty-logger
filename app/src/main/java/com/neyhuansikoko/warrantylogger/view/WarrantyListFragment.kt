@@ -13,10 +13,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.divider.MaterialDividerItemDecoration
 import com.neyhuansikoko.warrantylogger.*
-import com.neyhuansikoko.warrantylogger.database.Warranty
+import com.neyhuansikoko.warrantylogger.adapter.WarrantyListAdapter
+import com.neyhuansikoko.warrantylogger.database.model.Warranty
 import com.neyhuansikoko.warrantylogger.databinding.FragmentWarrantyListBinding
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class WarrantyListFragment : Fragment() {
 
     private var _binding: FragmentWarrantyListBinding? = null

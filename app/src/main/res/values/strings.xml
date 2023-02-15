@@ -63,4 +63,6 @@
     <string name="restart_dialog_text">This action will overwrite all data and restart the application. Do you want to continue?</string>
     <string name="export_backup_text">Export Backup</string>
     <string name="import_backup_text">Import Backup</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

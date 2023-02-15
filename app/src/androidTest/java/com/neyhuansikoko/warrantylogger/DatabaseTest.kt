@@ -4,14 +4,10 @@ import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.neyhuansikoko.warrantylogger.database.Warranty
-import com.neyhuansikoko.warrantylogger.database.WarrantyDao
-import com.neyhuansikoko.warrantylogger.database.WarrantyRoomDatabase
-import kotlinx.coroutines.runBlocking
+import com.neyhuansikoko.warrantylogger.database.dao.WarrantyDao
+import com.neyhuansikoko.warrantylogger.database.AppDatabase
 import org.junit.After
-import org.junit.Assert.assertEquals
 import org.junit.Before
-import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.IOException
 import java.util.*
@@ -20,19 +16,19 @@ import java.util.*
 class DatabaseTest {
 
     private lateinit var warrantyDao: WarrantyDao
-    private lateinit var warrantyRoomDatabase: WarrantyRoomDatabase
+    private lateinit var appDatabase: AppDatabase
 
     @Before
     fun createDb() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        warrantyRoomDatabase = Room.inMemoryDatabaseBuilder(
-            context, WarrantyRoomDatabase::class.java).allowMainThreadQueries().build()
-        warrantyDao = warrantyRoomDatabase.warrantyDao()
+        appDatabase = Room.inMemoryDatabaseBuilder(
+            context, AppDatabase::class.java).allowMainThreadQueries().build()
+        warrantyDao = appDatabase.warrantyDao()
     }
 
     @After
     @Throws(IOException::class)
     fun closeDb() {
-        warrantyRoomDatabase.close()
+        appDatabase.close()
     }
 }

@@ -19,21 +19,14 @@ import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
-import androidx.core.net.toFile
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.neyhuansikoko.warrantylogger.*
 import com.neyhuansikoko.warrantylogger.R
-import com.neyhuansikoko.warrantylogger.database.isValid
 import com.neyhuansikoko.warrantylogger.databinding.FragmentCameraBinding
 import com.neyhuansikoko.warrantylogger.viewmodel.WarrantyViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
-import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -155,17 +148,23 @@ class CameraFragment : Fragment() {
             scaleGestureDetector.onTouchEvent(event)
             return@setOnTouchListener true
         }
+
+        sharedViewModel.onResetImageCount()
+        sharedViewModel.cameraImageCount.observe(viewLifecycleOwner) { imageCount ->
+            if (imageCount > 0) {
+                binding.tvCameraImagesCount.text =
+                    "$imageCount ${if (imageCount == 1) "image" else "images"} taken"
+            } else {
+                binding.tvCameraImagesCount.text = getString(R.string.empty)
+            }
+        }
     }
 
     private fun takePhoto() {
         // Get a stable reference of the modifiable image capture use case
         val imageCapture = imageCapture ?: return
 
-        // Create time stamped name and MediaStore entry.
-        val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
-            .format(System.currentTimeMillis())
-
-        val file = File.createTempFile(name, TEMP_IMAGE_SUFFIX, requireActivity().cacheDir)
+        val file = File(requireActivity().applicationContext.cacheDir, getUniqueName() + TEMP_IMAGE_SUFFIX)
 
         val outputOptions = ImageCapture.OutputFileOptions.Builder(file).build()
 
@@ -181,17 +180,18 @@ class CameraFragment : Fragment() {
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults){
                     val outputUri = output.savedUri
-                    outputUri?.toFile()?.let {
-                        val msg = "Photo capture succeeded: ${it.name}"
-                        Toast.makeText(requireActivity().baseContext, msg, Toast.LENGTH_SHORT).show()
-
-                        lifecycleScope.launch(Dispatchers.Default) {
-                            sharedViewModel.onImgCopiedToTemp(it)
-                            withContext(Dispatchers.Main) {
-                                navigateToAddWarranty()
-                            }
-                        }
-                    }
+//                    outputUri?.toFile()?.let {
+//                        val msg = "Photo capture succeeded: ${it.name}"
+//                        Toast.makeText(requireActivity().baseContext, msg, Toast.LENGTH_SHORT).show()
+//
+//                        lifecycleScope.launch(Dispatchers.Default) {
+////                            sharedViewModel.onImgCopiedToTemp(it)
+//                            withContext(Dispatchers.Main) {
+//                                navigateToAddWarranty()
+//                            }
+//                        }
+//                    }
+                    outputUri?.let { sharedViewModel.onImagesTaken(it) }
                 }
             }
         )
@@ -238,16 +238,16 @@ class CameraFragment : Fragment() {
         }
     }
 
-    private fun navigateToAddWarranty() {
-        val action = CameraFragmentDirections.actionCameraFragmentToAddWarrantyFragment(
-            title = if (sharedViewModel.inputModel.isValid()) {
-                getString(R.string.edit_warranty_title_text)
-            } else {
-                getString(R.string.add_warranty_title_text)
-            }
-        )
-        findNavController().navigate(action)
-    }
+//    private fun navigateToAddWarranty() {
+//        val action = CameraFragmentDirections.actionCameraFragmentToAddWarrantyFragment(
+//            title = if (sharedViewModel.inputModel.isValid()) {
+//                getString(R.string.edit_warranty_title_text)
+//            } else {
+//                getString(R.string.add_warranty_title_text)
+//            }
+//        )
+//        findNavController().navigate(action)
+//    }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(

@@ -3,17 +3,19 @@ package com.neyhuansikoko.warrantylogger
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
+import android.provider.OpenableColumns
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import androidx.core.net.toFile
+import androidx.core.net.toUri
 import androidx.exifinterface.media.ExifInterface
 import androidx.lifecycle.MutableLiveData
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.snackbar.Snackbar
-import com.neyhuansikoko.warrantylogger.database.Warranty
+import com.neyhuansikoko.warrantylogger.database.model.Warranty
 import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -36,8 +38,7 @@ val EMPTY_DATE_CONSTRAINT: CalendarConstraints = CalendarConstraints.Builder().b
 private val _DEFAULT_MODEL = Warranty(
     warrantyName = "",
     purchaseDate = Long.MIN_VALUE,
-    expirationDate = Long.MIN_VALUE,
-    image = null
+    expirationDate = Long.MIN_VALUE
 )
 val DEFAULT_MODEL get() = _DEFAULT_MODEL.copy(
     purchaseDate = nowMillis
@@ -46,49 +47,91 @@ val DEFAULT_MODEL get() = _DEFAULT_MODEL.copy(
 fun formatDateMillis(dateMillis: Long): String = SimpleDateFormat("dd/MM/yyyy", Locale.US).format(dateMillis)
 fun formatDateTimeMillis(dateMillis: Long): String = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.US).format(dateMillis)
 
-fun getImageFile(context: Context, image: String): File? {
-    val imageDir = File(context.filesDir, IMAGE_DIR)
-    val imageFile = File(imageDir, image)
-
-    return if (imageFile.exists()) {
-        imageFile
-    } else {
-        null
-    }
-}
-
-//Return file even if it doesn't exist
-fun getImageFileAbs(context: Context, image: String): File {
-    val imageDir = File(context.filesDir, IMAGE_DIR)
-    return File(imageDir, image)
-}
-
 fun clearCache(context: Context) {
     val dir = context.cacheDir
     dir.deleteRecursively()
 }
 
-fun File.compressImage(): File {
-    val exifOrientation = ExifInterface(this).getAttribute(ExifInterface.TAG_ORIENTATION)
-    val bitmap = BitmapFactory.decodeFile(this.path)
-    var out: FileOutputStream? = null
+fun getUniqueName(): String {
+    return SimpleDateFormat(FILENAME_FORMAT, Locale.US).format(System.currentTimeMillis())
+}
+
+//fun File.compressImage(): File {
+//    val exifOrientation = ExifInterface(this).getAttribute(ExifInterface.TAG_ORIENTATION)
+//    val bitmap = BitmapFactory.decodeFile(this.path)
+//    var out: FileOutputStream? = null
+//    try {
+//        out = FileOutputStream(this)
+//        bitmap.compress(Bitmap.CompressFormat.JPEG, COMPRESSION_QUALITY /* ignored for PNG */, out)
+//    } finally {
+//        out?.let {
+//            try {
+//                it.close()
+//            } catch (ignore: IOException) {
+//            }
+//        }
+//    }
+//    ExifInterface(this).apply {
+//        setAttribute(ExifInterface.TAG_ORIENTATION, exifOrientation)
+//        saveAttributes()
+//    }
+//
+//    return this
+//}
+
+fun getUriFilename(context: Context, uri: Uri): String {
+    var name = NO_NAME_IMAGE
     try {
-        out = FileOutputStream(this)
-        bitmap.compress(Bitmap.CompressFormat.JPEG, COMPRESSION_QUALITY /* ignored for PNG */, out)
-    } finally {
-        out?.let {
-            try {
-                it.close()
-            } catch (ignore: IOException) {
-            }
+        name = uri.toFile().name
+    } catch (e: Exception) {
+        context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+            val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            cursor.moveToFirst()
+            name = cursor.getString(nameIndex)
         }
     }
-    ExifInterface(this).apply {
+    return name
+}
+
+fun String.getFilenameWithoutExtension(): String {
+    return this.removeRange(this.lastIndexOf('.'), this.length)
+}
+
+fun createThumbnail(context: Context, imageUri: Uri): Uri {
+    val thumbnailFile = File(
+        context.cacheDir,
+        getUriFilename(context, imageUri).getFilenameWithoutExtension() + THUMBNAIL_SUFFIX + TEMP_IMAGE_SUFFIX
+    )
+    thumbnailFile.outputStream().use { thumbOS ->
+        context.contentResolver.openInputStream(imageUri)?.use { imageIS ->
+            imageIS.copyTo(thumbOS)
+        }
+    }
+
+    val exifOrientation = ExifInterface(thumbnailFile).getAttribute(ExifInterface.TAG_ORIENTATION)
+    var bitmap = BitmapFactory.decodeFile(imageUri.path)
+
+    val width: Int
+    val height: Int
+    if (bitmap.height > bitmap.width) {
+        width = bitmap.width / (bitmap.height / THUMBNAIL_SIZE)
+        height = THUMBNAIL_SIZE
+    } else {
+        height = bitmap.height / (bitmap.width / THUMBNAIL_SIZE)
+        width = THUMBNAIL_SIZE
+    }
+    bitmap = Bitmap.createScaledBitmap(bitmap, width, height, false)
+
+    thumbnailFile.outputStream().use { thumbOS ->
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100 /* ignored for PNG */, thumbOS)
+    }
+    bitmap.recycle()
+
+    ExifInterface(thumbnailFile).apply {
         setAttribute(ExifInterface.TAG_ORIENTATION, exifOrientation)
         saveAttributes()
     }
-
-    return this
+    return thumbnailFile.toUri()
 }
 
 fun <T> MutableLiveData<T>.notifyObserver() {

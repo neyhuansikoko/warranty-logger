@@ -312,28 +312,6 @@
             app:layout_constraintTop_toBottomOf="@+id/div_detail_expiration_date" />
 
         <TextView
-            android:id="@+id/tv_detail_image_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/no_image_set_text"
-            app:layout_constraintStart_toStartOf="@+id/tv_detail_image_label"
-            app:layout_constraintTop_toBottomOf="@+id/tv_detail_image_label" />
-
-        <ImageView
-            android:id="@+id/img_detail_image"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:adjustViewBounds="true"
-            android:importantForAccessibility="no"
-            android:visibility="gone"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/tv_detail_image_label"
-            app:layout_constraintTop_toBottomOf="@+id/tv_detail_image_label"
-            tools:src="@tools:sample/backgrounds/scenic" />
-
-        <TextView
             android:id="@+id/tv_detail_remaining_time_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -353,6 +331,33 @@
             app:layout_constraintTop_toTopOf="@+id/tv_detail_remaining_time_label"
             app:layout_constraintVertical_bias="0.0"
             tools:text="expired" />
+
+        <TextView
+            android:id="@+id/tv_detail_image_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/no_image_set_text"
+            app:layout_constraintStart_toStartOf="@+id/tv_detail_image_label"
+            app:layout_constraintTop_toBottomOf="@+id/tv_detail_image_label" />
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/tv_detail_image_name"
+            app:layout_constraintTop_toBottomOf="@+id/tv_detail_image_name">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_detail_image"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                app:spanCount="3"
+                tools:itemCount="20"
+                tools:listitem="@layout/list_item_image" />
+        </androidx.core.widget.NestedScrollView>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

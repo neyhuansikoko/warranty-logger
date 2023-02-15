@@ -15,6 +15,10 @@
         app:actionViewClass="android.widget.SearchView"
         app:showAsAction="always" />
     <item
+        android:id="@+id/menu_item_settings"
+        android:title="@string/settings_text"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/menu_item_backup"
         android:title="@string/backup_and_restore_text"
         app:showAsAction="never" />

@@ -22,4 +22,11 @@
 
     <include layout="@layout/content_main" />
 
+    <View
+        android:id="@+id/view_main_blocker"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:foreground="?attr/colorSurface"
+        android:elevation="10dp"/>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

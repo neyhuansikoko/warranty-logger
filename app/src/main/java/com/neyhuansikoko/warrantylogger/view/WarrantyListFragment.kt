@@ -254,6 +254,10 @@ class WarrantyListFragment : Fragment() {
                         resetOptionMenu()
                         true
                     }
+                    R.id.menu_item_settings -> {
+                        navigateToSettings()
+                        true
+                    }
                     R.id.menu_item_backup -> {
                         navigateToBackup()
                         true
@@ -298,6 +302,10 @@ class WarrantyListFragment : Fragment() {
     private fun navigateToDetail(warranty: Warranty) {
         sharedViewModel.assignModel(warranty)
         findNavController().navigate(R.id.action_warrantyListFragment_to_warrantyDetailFragment)
+    }
+
+    private fun navigateToSettings() {
+        findNavController().navigate(R.id.action_warrantyListFragment_to_settingsFragment)
     }
 
     private fun navigateToBackup() {

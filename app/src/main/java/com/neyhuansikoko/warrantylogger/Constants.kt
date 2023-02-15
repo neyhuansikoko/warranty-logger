@@ -16,6 +16,7 @@ const val DEFAULT_DURATION: Int = 2
 const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
 
 const val FLASH_MODE_KEY = "FLASH_MODE_KEY"
+const val SETTINGS_LOCK_KEY = "SETTINGS_LOCK_KEY"
 
 const val DATABASE_NAME = "warranty-logger-app-database"
 const val WAL_FILE_SUFFIX = "-wal"

@@ -124,7 +124,6 @@ class CameraFragment : Fragment() {
                     }
                 }
                 sharedPreferences?.edit()?.let {
-                    log("Test")
                     it.putInt(FLASH_MODE_KEY, flashMode)
                     it.apply()
                 }

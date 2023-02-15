@@ -92,10 +92,10 @@ class WarrantyDetailFragment : Fragment() {
                 if (imageList.isNotEmpty()) {
                     this.tvDetailImageName.text =
                         "${imageList.size} ${if (imageList.size == 1) "image" else "images"} saved"
-                    rvAdapter.submitList(imageList)
                 } else {
                     this.tvDetailImageName.text = getString(R.string.no_image_set_text)
                 }
+                rvAdapter.submitList(imageList)
             }
 
             btnDetailApply.setOnClickListener { view ->

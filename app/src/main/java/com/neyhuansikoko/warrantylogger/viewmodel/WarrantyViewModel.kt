@@ -12,9 +12,8 @@ import com.neyhuansikoko.warrantylogger.database.model.Warranty
 import com.neyhuansikoko.warrantylogger.database.model.isValid
 import com.neyhuansikoko.warrantylogger.repository.WarrantyRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import java.io.File
 import java.time.Period
 import java.time.temporal.ChronoUnit
@@ -199,19 +198,29 @@ class WarrantyViewModel @Inject constructor(
                 viewModelScope.launch {
                     val listImageDelete: MutableList<Image> = mutableListOf()
                     val warrantyIdList: List<Int> = listWarrantyBind.map { it.warrantyId }
+                    val channel = Channel<List<Image>>(warrantyIdList.size)
 
-                    warrantyIdList.forEach { id ->
-                        val imagesOfWarranty = warrantyRepository.getAllImagesForWarranty(id)
-                        listImageDelete.addAll(imagesOfWarranty)
-                    }
-
-                    warrantyRepository.deleteSelectedWarranties(warrantyIdList)
-
-                    listImageDelete.forEach { image ->
+                    val jobs = warrantyIdList.map { id ->
                         launch {
-                            deleteImageFile(image)
+                            val imagesOfWarranty = warrantyRepository.getAllImagesForWarranty(id)
+                            channel.send(imagesOfWarranty)
                         }
                     }
+
+                    launch {
+                        repeat(warrantyIdList.size) {
+                            listImageDelete.addAll(channel.receive())
+                        }
+
+                        listImageDelete.forEach { image ->
+                            launch {
+                                deleteImageFile(image)
+                            }
+                        }
+                    }
+
+                    jobs.joinAll()
+                    warrantyRepository.deleteSelectedWarranties(warrantyIdList)
                 }
             }
         }

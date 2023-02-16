@@ -8,6 +8,7 @@ Features:
 - Search and sort feature
 - Offline backup and restore
 - Export & Import backup file to & from device storage
+- Lock screen to prevent unauthorized access to application
 
 To be implemented:
 - Integration to google drive or similar service
